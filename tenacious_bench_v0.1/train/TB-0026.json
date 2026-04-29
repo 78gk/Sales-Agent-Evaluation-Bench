@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0026",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "3083caba-fb6a-4866-88f0-954be8d6a339",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Forge Systems",
+      "signals": {
+        "leadership": {
+          "conf": 0.25,
+          "value": "news: CEO appointed 8 days ago, no CTO change",
+          "age_days": 8,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Forge Systems referencing their leadership transition signal: 'news: CEO appointed 8 days ago, no CTO change' (8 days ago)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] CEO change \u2260 CTO change. Low-conf leadership signal \u2192 hypothesis."
+  }
+}

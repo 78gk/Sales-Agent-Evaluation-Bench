@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0020",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "7463faab-f29c-4617-8229-802300c83c30",
+  "seed_probe_id": "P-007",
+  "input": {
+    "prospect_context": {
+      "company": "Zenith Data",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.77,
+          "value": "BuiltWith: Spark + Kafka + dbt, fresh",
+          "age_days": 12,
+          "validity_window_days": 90,
+          "source": "builtwith_github"
+        }
+      }
+    },
+    "agent_prompt": "Draft an AI-readiness framing sentence for Zenith Data based on their technology stack signals (BuiltWith: Spark + Kafka + dbt, fresh)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-007] Three medium signals, conf=0.77 \u2192 inquiry (just under assertive conf threshold)."
+  }
+}

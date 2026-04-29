@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0065",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "4c4e20a2-9699-47a8-a248-ae7cf6cbbcdf",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Harbor Tech",
+      "signals": {
+        "funding": {
+          "conf": 0.65,
+          "value": "Series C $60M",
+          "age_days": 182,
+          "validity_window_days": 180,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Harbor Tech using their funding signal: 'Series C $60M' (signal is 182 days old, validity window is 180 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Funding 182d \u2014 borderline stale. Must disclose staleness."
+  }
+}

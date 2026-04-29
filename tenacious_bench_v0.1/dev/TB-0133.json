@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0133",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Hepta Systems",
+      "signals": {
+        "leadership": {
+          "conf": 0.22,
+          "value": "CTO 'transitions to advisory role' \u2014 press release",
+          "age_days": 5,
+          "validity_window_days": 90,
+          "source": "news"
+        }
+      }
+    },
+    "agent_prompt": "Draft Segment 3 pitch for Hepta Systems. Only signal: CTO 'transitioned to advisory role' per press release (not confirmed departure or replacement). Conf=0.22."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') in ['abstention','hypothesis']"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] Advisory-role announcement + conf=0.22 < 0.25 \u2192 abstention. Must not trigger Segment 3 pitch."
+  }
+}

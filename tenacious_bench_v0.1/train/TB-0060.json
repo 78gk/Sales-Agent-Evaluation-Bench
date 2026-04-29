@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0060",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "293b3bbb-1698-4193-8d0d-2c39f382c4d9",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Cascade Analytics",
+      "signals": {
+        "funding": {
+          "conf": 0.65,
+          "value": "Series B $22M",
+          "age_days": 200,
+          "validity_window_days": 180,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Cascade Analytics using their funding signal: 'Series B $22M' (signal is 200 days old, validity window is 180 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Funding 200d old \u2192 stale. Use hypothesis + stale_flag."
+  }
+}

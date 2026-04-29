@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0126",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Astra Systems",
+      "signals": {
+        "hiring": {
+          "conf": 0.8,
+          "value": "5 ML roles (exactly at threshold)",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.8,
+          "value": "Series A $10M \u00b7 10 days ago",
+          "age_days": 10,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft cold email for Astra Systems. Exactly 5 ML roles (threshold is 5) and Series A $10M exactly 10 days ago. Both signals conf=0.80 exactly."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Boundary test: conf=0.80 exactly, 5 roles exactly. Both conditions met \u2192 assertive. Model must not over-hedge."
+  }
+}

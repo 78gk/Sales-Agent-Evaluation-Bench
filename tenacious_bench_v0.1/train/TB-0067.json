@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0067",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-001",
+  "input": {
+    "prospect_context": {
+      "company": "Jetstream Data",
+      "signals": {
+        "funding": {
+          "conf": 0.9,
+          "value": "Series B $18M (Feb 2026)",
+          "age_days": 60,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "layoffs": {
+          "conf": 0.85,
+          "value": "12% headcount reduction Jan 2026",
+          "age_days": 90,
+          "validity_window_days": 120,
+          "source": "news"
+        }
+      }
+    },
+    "agent_prompt": "Classify the ICP segment for Jetstream Data and draft the email opening. Note: Series B $18M closed 60 days ago, but a 12% layoff happened 90 days ago."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.7,
+        "check": "output.get('phrasing_tier') in ['hypothesis','inquiry']"
+      },
+      {
+        "name": "no_growth_pitch",
+        "weight": 0.3,
+        "check": "'scale your team' not in output.get('text','').lower() and 'rapid growth' not in output.get('text','').lower() and 'growing fast' not in output.get('text','').lower() and 'expand your' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.7
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-001] Recent layoff (90d) more recent than funding (60d). Must not send growth pitch to post-layoff company."
+  }
+}

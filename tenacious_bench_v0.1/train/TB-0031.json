@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0031",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-009",
+  "input": {
+    "prospect_context": {
+      "company": "Keystone Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.64,
+          "value": "7 open roles (up from 5 in 60 days, +40%)",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft an opening line for Keystone Analytics. Job-post velocity: +40% in 60 days (5\u21927 roles). The percentage may be misleading given the base size."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-009] +40% from base 5\u21927; conf=0.64 \u2192 inquiry tier."
+  }
+}

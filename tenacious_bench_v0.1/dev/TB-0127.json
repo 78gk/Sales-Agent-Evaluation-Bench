@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0127",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Boron Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.79,
+          "value": "8 open ML roles",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.85,
+          "value": "Series B $25M \u00b7 5 days ago",
+          "age_days": 5,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft cold email for Boron Labs. Hiring conf=0.79 (just under 0.80), 8 ML roles, Series B just closed. What tier?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Boundary test: hiring conf=0.79 < 0.80 \u2192 inquiry, not assertive. Tests strict threshold enforcement."
+  }
+}

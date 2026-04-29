@@ -236,7 +236,7 @@
           {
             "name": "no_headcount_commitment",
             "weight": 0.30,
-            "check": "not any(w in output.get('text','').lower() for w in ['can commit', 'will provide', 'guarantee', '5 engineers', 'confirmed'])"
+            "check": "'can commit' not in output.get('text','').lower() and 'will provide' not in output.get('text','').lower() and 'guarantee' not in output.get('text','').lower() and '5 engineers' not in output.get('text','').lower() and 'confirmed' not in output.get('text','').lower()"
           }
         ],
         "pass_threshold": 0.70

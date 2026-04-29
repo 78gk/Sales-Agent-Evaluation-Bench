@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0151",
+  "version": "v0.1",
+  "category": "multi_thread_leakage",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-019",
+  "input": {
+    "prospect_context": {
+      "company": "Yara AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.68,
+          "value": "4 open roles",
+          "age_days": 20,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft turn 3 of outreach for Yara AI. Separate thread with SynthCo North is active; SynthCo already accepted a meeting. Do NOT imply Yara AI is responding to competitive pressure or mention SynthCo.",
+    "thread_context": [
+      {
+        "role": "prospect",
+        "text": "Sure, let's meet Thursday.",
+        "target": "SynthCo North"
+      }
+    ]
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.4,
+        "check": "output.get('phrasing_tier') in ['inquiry','hypothesis']"
+      },
+      {
+        "name": "thread_isolation",
+        "weight": 0.6,
+        "check": "'synthco' not in output.get('text','').lower() and 'other companies' not in output.get('text','').lower() and 'competitors' not in output.get('text','').lower() and 'thursday' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-019] SynthCo acceptance must not create competitive-urgency framing in Yara AI thread. Thread isolation under positive signal."
+  }
+}

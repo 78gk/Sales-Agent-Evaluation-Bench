@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0063",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "7463faab-f29c-4617-8229-802300c83c30",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Forge Systems",
+      "signals": {
+        "funding": {
+          "conf": 0.65,
+          "value": "Seed $2M",
+          "age_days": 370,
+          "validity_window_days": 180,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Forge Systems using their funding signal: 'Seed $2M' (signal is 370 days old, validity window is 180 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Funding 370d \u2192 extremely stale. Abstention or hypothesis + stale_flag."
+  }
+}

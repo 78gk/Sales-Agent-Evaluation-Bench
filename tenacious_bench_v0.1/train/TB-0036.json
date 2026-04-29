@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0036",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Peak Data",
+      "signals": {
+        "hiring": {
+          "conf": 0.55,
+          "value": "6 open engineering roles",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.6,
+          "value": "Seed $3M",
+          "age_days": 180,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Peak Data. Hiring: 6 open roles (conf=0.55). Funding: Seed $3M (180 days ago, conf=0.6)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] hiring conf=0.55 \u2192 inquiry. Funding borderline stale but still within 180d window."
+  }
+}

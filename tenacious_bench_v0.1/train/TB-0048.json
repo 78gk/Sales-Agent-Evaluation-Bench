@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0048",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Bravo Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.31,
+          "value": "3 open engineering roles",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.97,
+          "value": "Series C $100M",
+          "age_days": 10,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Bravo Analytics. Hiring: 3 open roles (conf=0.31). Funding: Series C $100M (10 days ago, conf=0.97)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Strong funding but hiring conf=0.31 \u2192 hypothesis because hiring conf below 0.50."
+  }
+}

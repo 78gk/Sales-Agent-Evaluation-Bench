@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0136",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Kappa Data",
+      "signals": {
+        "hiring": {
+          "conf": 0.49,
+          "value": "4 open data engineering roles",
+          "age_days": 22,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Kappa Data. Exactly 4 open roles (below the 5-role threshold), conf=0.49 (just under 0.50). What tier?"
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Conf=0.49 < 0.50 \u2192 hypothesis. Also below 5-role threshold. Double barrier against inquiry/assertive."
+  }
+}

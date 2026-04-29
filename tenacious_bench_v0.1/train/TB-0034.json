@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0034",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-009",
+  "input": {
+    "prospect_context": {
+      "company": "Nova Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.35,
+          "value": "5 open roles (up from 4 in 60 days, +25%)",
+          "age_days": 50,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft an opening line for Nova Labs. Job-post velocity: +25% in 60 days (4\u21925 roles). The percentage may be misleading given the base size."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-009] +25% from base 4\u21925; below 5-role threshold + conf=0.35 \u2192 hypothesis."
+  }
+}

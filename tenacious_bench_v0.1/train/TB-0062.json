@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0062",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "d6dc6b13-af74-4331-b1fa-75ae72008736",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Echo AI",
+      "signals": {
+        "leadership": {
+          "conf": 0.65,
+          "value": "new CTO announced",
+          "age_days": 95,
+          "validity_window_days": 90,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Echo AI using their leadership signal: 'new CTO announced' (signal is 95 days old, validity window is 90 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Leadership signal 95d > 90d window \u2192 stale_flag required."
+  }
+}

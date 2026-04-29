@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0130",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Elara Tech",
+      "signals": {
+        "hiring": {
+          "conf": 0.75,
+          "value": "9 ML roles",
+          "age_days": 65,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.88,
+          "value": "Series B $35M \u00b7 12 days ago",
+          "age_days": 12,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Elara Tech. Hiring data is 65 days old (stale, window=60d). Funding is fresh and high-conf. Lead with funding only."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.5,
+        "check": "output.get('phrasing_tier') in ['inquiry','assertive']"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.5,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.5
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Hiring stale (65d>60d), funding fresh. Must disclose stale hiring and not assert role count. Single fresh signal \u2192 inquiry max."
+  }
+}

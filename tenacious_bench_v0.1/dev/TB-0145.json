@@ -1,0 +1,62 @@
+{
+  "task_id": "TB-0145",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-004",
+  "input": {
+    "prospect_context": {
+      "company": "Sigma Health",
+      "signals": {
+        "funding": {
+          "conf": 0.9,
+          "value": "Series C $90M",
+          "age_days": 120,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "layoffs": {
+          "conf": 0.95,
+          "value": "18% headcount reduction, 30 days ago",
+          "age_days": 30,
+          "validity_window_days": 120,
+          "source": "news"
+        },
+        "hiring": {
+          "conf": 0.7,
+          "value": "8 open roles (likely backfills)",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Classify and pitch Sigma Health. Series C $90M 120d ago. BUT 18% layoff 30 days ago. 8 open roles (likely backfills). What segment and what tier?"
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['hypothesis','abstention']"
+      },
+      {
+        "name": "no_growth_pitch",
+        "weight": 0.4,
+        "check": "'expand' not in output.get('text','').lower() and 'scale your team' not in output.get('text','').lower() and 'aggressive hiring' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-004] Major layoff (30d) overrides large funding (120d). Backfill roles \u2260 growth. Hypothesis + no growth pitch."
+  }
+}

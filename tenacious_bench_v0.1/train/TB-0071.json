@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0071",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-005",
+  "input": {
+    "prospect_context": {
+      "company": "Nova Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.55,
+          "value": "8 open roles (3 engineering)",
+          "age_days": 22,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "jobdensity": {
+          "conf": 0.42,
+          "value": "BuiltWith: React + PostgreSQL",
+          "age_days": 30,
+          "validity_window_days": 90,
+          "source": "builtwith"
+        }
+      }
+    },
+    "agent_prompt": "Draft ICP classification and outreach for Nova Labs. No Crunchbase record. Only job-posts and BuiltWith signals available."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-005] No firmographic data. Must not assert segment with confidence language. Inquiry tier required."
+  }
+}

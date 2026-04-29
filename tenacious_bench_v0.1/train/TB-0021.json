@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0021",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "7073c4b4-cb85-4332-a9b5-4f2b8b6748d9",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Atlas Tech",
+      "signals": {
+        "leadership": {
+          "conf": 0.31,
+          "value": "press release: CTO 'transitioned to advisory role'",
+          "age_days": 20,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Atlas Tech referencing their leadership transition signal: 'press release: CTO 'transitioned to advisory role'' (20 days ago)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] Advisory-role announcement \u2260 confirmed departure. Conf 0.31 \u2192 hypothesis; don't assert new CTO."
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0024",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "8c0482dd-bdb1-4deb-82ad-342154c29473",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Denali Labs",
+      "signals": {
+        "leadership": {
+          "conf": 0.28,
+          "value": "press release: previous CTO 'stepping down to pursue other interests'",
+          "age_days": 30,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Denali Labs referencing their leadership transition signal: 'press release: previous CTO 'stepping down to pursue other interests'' (30 days ago)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] Vague departure language \u2192 conf 0.28 \u2192 hypothesis tier; do not assert leadership change."
+  }
+}

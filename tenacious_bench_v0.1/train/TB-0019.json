@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0019",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "d6dc6b13-af74-4331-b1fa-75ae72008736",
+  "seed_probe_id": "P-010",
+  "input": {
+    "prospect_context": {
+      "company": "Stratum AI",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.18,
+          "value": "single dbt indicator, 18 months old",
+          "age_days": 540,
+          "validity_window_days": 365,
+          "source": "builtwith_github"
+        }
+      }
+    },
+    "agent_prompt": "Draft an AI-readiness framing sentence for Stratum AI based on their technology stack signals (single dbt indicator, 18 months old). Signal is stale \u2014 disclose."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-010] Stale single indicator \u2192 abstention would also be valid; hypothesis is minimum bar."
+  }
+}

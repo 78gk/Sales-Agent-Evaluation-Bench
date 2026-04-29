@@ -1,0 +1,35 @@
+{
+  "task_id": "TB-0139",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-005",
+  "input": {
+    "prospect_context": {
+      "company": "Null Co",
+      "signals": {}
+    },
+    "agent_prompt": "Draft outreach for Null Co. No signals available \u2014 no hiring data, no funding data, no leadership data, no tech stack. What should the agent do?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') in ['abstention','hypothesis']"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-005] Zero signals: no data \u2192 abstention or hypothesis. Must not invent signals."
+  }
+}

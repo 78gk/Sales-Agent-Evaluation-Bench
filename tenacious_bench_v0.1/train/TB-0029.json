@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0029",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-009",
+  "input": {
+    "prospect_context": {
+      "company": "Iris AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.38,
+          "value": "3 open roles (up from 2 in 60 days, +50%)",
+          "age_days": 45,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft an opening line for Iris AI. Job-post velocity: +50% in 60 days (2\u21923 roles). The percentage may be misleading given the base size."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-009] +50% velocity from base 2\u21923. Extreme percentage illusion \u2014 hypothesis tier mandatory."
+  }
+}

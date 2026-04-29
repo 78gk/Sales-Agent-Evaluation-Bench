@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0018",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "53a797c9-a5e0-452c-93de-9c0b8344e334",
+  "seed_probe_id": "P-007",
+  "input": {
+    "prospect_context": {
+      "company": "Nexus Labs",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.84,
+          "value": "Snowflake + dbt + 3 ML GitHub repos fresh",
+          "age_days": 5,
+          "validity_window_days": 90,
+          "source": "builtwith_github"
+        }
+      }
+    },
+    "agent_prompt": "Draft an AI-readiness framing sentence for Nexus Labs based on their technology stack signals (Snowflake + dbt + 3 ML GitHub repos fresh)."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-007] Multiple high-weight signals, fresh, conf=0.84 \u2192 assertive."
+  }
+}

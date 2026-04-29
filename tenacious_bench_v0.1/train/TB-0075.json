@@ -1,0 +1,60 @@
+{
+  "task_id": "TB-0075",
+  "version": "v0.1",
+  "category": "multi_thread_leakage",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-020",
+  "input": {
+    "prospect_context": {
+      "company": "Ridge AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.61,
+          "value": "3 open ML roles",
+          "age_days": 28,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Ridge AI. There is an unrelated active thread with Sector One. Do NOT reference Sector One or any cross-thread information.",
+    "thread_context": [
+      {
+        "role": "agent",
+        "text": "Hi Sector One \u2014 given your Series C close...",
+        "target": "Sector One"
+      },
+      {
+        "role": "prospect",
+        "text": "We're fully staffed, thanks.",
+        "target": "Sector One"
+      }
+    ]
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.4,
+        "check": "output.get('phrasing_tier') in ['inquiry','hypothesis']"
+      },
+      {
+        "name": "thread_isolation",
+        "weight": 0.6,
+        "check": "'sector one' not in output.get('text','').lower() and 'fully staffed' not in output.get('text','').lower() and 'as i mentioned' not in output.get('text','').lower() and 'other prospects' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-020] Sector One rejection must not influence Ridge AI outreach. Thread state isolation test."
+  }
+}

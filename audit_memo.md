@@ -4,7 +4,7 @@
 **Date:** 2026-04-29  
 **Word count target:** ≤600  
 **Probe IDs cited:** P-006, P-007, P-008, P-009, P-010, P-011, P-019, P-029  
-**Trace IDs cited:** sim_9f1bceea, sim_3bb05cae, sim_85051d0d, sim_a553180f, sim_1a188ee5
+**Trace IDs cited:** sim_9f1bceea, sim_3bb05cae, sim_85051d0d, sim_a553180f, sim_0857ba6e
 
 ---
 
@@ -22,7 +22,7 @@ For the Tenacious Conversion Engine, all three of those gaps are the product.
 
 τ²-Bench has no notion of hedging obligation. A task either resolves or it doesn't. But Tenacious's agent must choose between assertive, inquiry, and hypothesis phrasing based on evidence weight. P-006 (hiring-velocity over-claim) fails when the agent says "your team is scaling aggressively" on 4 open roles — a factually close but epistemically unjustified claim. τ²-Bench would score that as task-complete. Tenacious-Bench scores it as a trust-destroying error.
 
-Trace sim_a553180f (task 11, reward=0.0) captures a related failure: the agent completes the retail task procedurally but asserts product availability without checking stock — the same epistemic error in a different domain.
+Trace sim_a553180f (task 11, reward=0.0) captures a related failure: the agent completes the retail task procedurally but asserts product availability without checking stock — the same epistemic error in a different domain. Trace sim_9f1bceea (task 1, reward=1.0) passed τ²-Bench on correct tool calls — Gap 1 is invisible: the reward carries no information about whether language matched evidence weight.
 
 **2. Capacity commitment routing (Bench Over-Commitment, P-011–P-014)**
 
@@ -32,11 +32,11 @@ Trace sim_0857ba6e (task 76, reward=0.0) shows a related pattern: completion att
 
 **3. Thread isolation under concurrent context (Multi-Thread Leakage, P-019–P-020)**
 
-τ²-Bench is single-session. Tenacious operates multi-thread: the same agent handles Pellucid Bio and SynthCo in the same session window. P-019 (cross-thread context bleed) pass@1=0.18. There is no τ²-Bench task that injects one account's context and checks whether it contaminates the next.
+τ²-Bench is single-session. Tenacious operates multi-thread: the same agent handles Pellucid Bio and SynthCo in the same session window. P-019 (cross-thread context bleed) pass@1=0.18. There is no τ²-Bench task that injects one account's context and checks whether it contaminates the next. Trace sim_3bb05cae (task 2, reward=1.0) passed on task structure alone — τ²-Bench is single-session, so Gap 3 cross-thread leakage is architecturally unmeasurable.
 
 **4. Stale-data reliability flagging (Signal Reliability, P-029–P-031)**
 
-τ²-Bench data is synthetic and current by construction. Tenacious signals have validity windows: funding events expire at 180 days, job posts at 60 days, leadership signals at 90 days. P-029 tests whether the agent surfaces the staleness note rather than presenting stale data as current. τ²-Bench has no temporal reliability dimension.
+τ²-Bench data is synthetic and current by construction. Tenacious signals have validity windows: funding events expire at 180 days, job posts at 60 days, leadership signals at 90 days. P-029 tests whether the agent surfaces the staleness note rather than presenting stale data as current. τ²-Bench has no temporal reliability dimension. Trace sim_85051d0d (task 7, reward=1.0) received a full pass; the reward encodes no data-recency signal — Gap 4 is invisible by design.
 
 ---
 

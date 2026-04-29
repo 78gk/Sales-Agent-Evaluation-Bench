@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0135",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "a553180f-80d2-4d4b-9a1e-d525b1219cfd",
+  "seed_probe_id": "P-010",
+  "input": {
+    "prospect_context": {
+      "company": "Jasper AI",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.18,
+          "value": "2 ML repos, last commit 14 months ago",
+          "age_days": 425,
+          "validity_window_days": 365,
+          "source": "github"
+        }
+      }
+    },
+    "agent_prompt": "Draft AI readiness framing for Jasper AI. Only signal: 2 GitHub ML repos, last commit 14 months ago (425 days). Conf=0.18."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['abstention','hypothesis']"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-010] GitHub activity 425d > 365d validity. Conf=0.18 < 0.25 \u2192 abstention + stale_flag. P-010 exact scenario."
+  }
+}

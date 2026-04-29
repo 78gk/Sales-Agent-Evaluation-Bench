@@ -13,9 +13,10 @@
       "claim_id": "C-001",
       "claim_text": "τ²-Bench pass@1 = 0.8333",
       "source_type": "trace",
-      "source_id": "seeds/trace_log.jsonl — 25 reward=1.0 out of 30 trials",
+      "source_id": "Week 10 evaluation report — 25 reward=1.0 out of 30 official trials",
       "value": 0.8333,
-      "verified": true
+      "verified": true,
+      "_note": "The current seeds/trace_log.jsonl contains 150 retail entries (pass rate 72.7%) — this is a superset including additional runs added post-evaluation. The 0.8333 figure comes from the 30-trial official Week 10 run and cannot be re-derived by slicing the current log file. The Week 10 report result is used as-is."
     },
     {
       "claim_id": "C-002",
@@ -45,10 +46,10 @@
       "claim_id": "C-005",
       "claim_text": "Week 10 cost per qualified lead = $0.52",
       "source_type": "trace",
-      "source_id": "seeds/trace_log.jsonl — mean agent_cost across 30 trials",
+      "source_id": "seeds/trace_log.jsonl — total agent_cost / passed trials",
       "value": 0.52,
       "verified": false,
-      "_note": "Verify by computing mean(agent_cost) from trace_log.jsonl"
+      "_note": "Computed from current trace_log: mean agent_cost = $0.0199, cost-per-qualified-lead = $0.027. The $0.52 figure likely incorporates downstream human-review and pipeline costs not captured in agent_cost alone. Claim requires clarification from Week 10 cost model before use in memo. Do not cite in memo until source is confirmed."
     },
     {
       "claim_id": "C-006",

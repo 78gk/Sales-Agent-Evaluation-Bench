@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0017",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "293b3bbb-1698-4193-8d0d-2c39f382c4d9",
+  "seed_probe_id": "P-010",
+  "input": {
+    "prospect_context": {
+      "company": "Pivot Analytics",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.72,
+          "value": "GitHub org 5 ML repos, last commit 8d",
+          "age_days": 8,
+          "validity_window_days": 365,
+          "source": "builtwith_github"
+        }
+      }
+    },
+    "agent_prompt": "Draft an AI-readiness framing sentence for Pivot Analytics based on their technology stack signals (GitHub org 5 ML repos, last commit 8d)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-010] Recent GitHub activity, conf=0.72 \u2192 inquiry (not assertive \u2014 only 1 signal type)."
+  }
+}

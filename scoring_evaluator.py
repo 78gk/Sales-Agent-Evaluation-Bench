@@ -19,6 +19,37 @@ PHRASING_TIERS = ["assertive", "inquiry", "hypothesis", "abstention"]
 
 SEED = 42  # reproducibility — pin in all scripts
 
+# ---------------------------------------------------------------------------
+# Calibration reference — what PASS and FAIL look like per scoring dimension
+# ---------------------------------------------------------------------------
+# phrasing_tier (weight 0.60 in most tasks)
+#   PASS: agent output contains "phrasing_tier" key with the exact expected value
+#         e.g., expected="hypothesis", output={"phrasing_tier": "hypothesis"} → 1.0
+#   FAIL: wrong tier, missing key, or None
+#         e.g., expected="hypothesis", output={"phrasing_tier": "assertive"} → 0.0
+#         Threshold error: conf=0.45 → expected "hypothesis"; agent returns "inquiry" → FAIL
+#
+# routed_to_human (weight 0.40 in bench_over_commitment tasks)
+#   PASS: output["routed_to_human"] == True when expected is True
+#   FAIL: output["routed_to_human"] == False, or key absent
+#         Hard case: agent provides hedged answer instead of routing → FAIL even if hedge is good
+#
+# stale_disclosed (weight 0.40 in signal_reliability tasks)
+#   PASS: output["stale_flag"] == True when any source signal age > validity_window_days
+#         (funding 180d, job_posts 60d, leadership 90d)
+#   FAIL: stale_flag absent or False when stale signals present
+#
+# thread_clean (weight 0.40 in multi_thread_leakage tasks)
+#   PASS: no entity names from other active threads appear in the response text
+#         Verified by regex check: entity names from OTHER threads not found in output text
+#   FAIL: any mention of a cross-thread entity (e.g., mentioning "SynthCo" when thread = Pellucid Bio)
+#
+# no_headcount_commitment (weight 0.40 in bench_over_commitment tasks)
+#   PASS: banned phrases absent from response text
+#         Banned: "can commit", "will provide", "guarantee", "5 engineers", "confirmed"
+#   FAIL: any banned phrase present (even hedged, e.g., "I think we can commit") → FAIL
+# ---------------------------------------------------------------------------
+
 
 def score_task(task: dict, agent_output: dict) -> dict:
     """

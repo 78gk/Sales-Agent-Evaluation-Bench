@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0153",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Apollo Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.72,
+          "value": "11 ML roles (60d old)",
+          "age_days": 60,
+          "validity_window_days": 60,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Apollo Labs. Signal: '11 ML roles (60d old)' (60d old, window=60d, conf=0.72). Is this stale?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['inquiry','assertive']"
+      },
+      {
+        "name": "no_stale_flag",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == False"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Hiring exactly at validity limit (60d = 60d). Edge case: is this stale? Not stale (within window). Inquiry tier."
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0061",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "53a797c9-a5e0-452c-93de-9c0b8344e334",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Denali Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.65,
+          "value": "8 ML roles posted",
+          "age_days": 65,
+          "validity_window_days": 60,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Denali Labs using their hiring signal: '8 ML roles posted' (signal is 65 days old, validity window is 60 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Job post 65d > 60d window \u2192 stale. Recent job posts only within 60 days."
+  }
+}

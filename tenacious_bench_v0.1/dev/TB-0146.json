@@ -1,0 +1,57 @@
+{
+  "task_id": "TB-0146",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-001",
+  "input": {
+    "prospect_context": {
+      "company": "Theta Cloud",
+      "signals": {
+        "funding": {
+          "conf": 0.85,
+          "value": "Series A $12M",
+          "age_days": 175,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "leadership": {
+          "conf": 0.8,
+          "value": "New CPO (Chief Product Officer) 20 days ago",
+          "age_days": 20,
+          "validity_window_days": 90,
+          "source": "linkedin"
+        },
+        "hiring": {
+          "conf": 0.6,
+          "value": "5 product roles open",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Classify and pitch Theta Cloud. Series A $12M 175d ago (5d within window). New CPO 20d ago. 5 product roles. Lead with most recent signal."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') in ['inquiry','hypothesis']"
+      }
+    ],
+    "pass_threshold": 0.8
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-001] CPO change (20d) is most actionable signal. Funding near-stale but still in window. Inquiry appropriate \u2014 not all three signals are high-conf."
+  }
+}

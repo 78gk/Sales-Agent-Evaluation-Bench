@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0148",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-002",
+  "input": {
+    "prospect_context": {
+      "company": "Vela Systems",
+      "signals": {
+        "leadership": {
+          "conf": 0.72,
+          "value": "New CTO appointed 91 days ago",
+          "age_days": 91,
+          "validity_window_days": 90,
+          "source": "linkedin"
+        }
+      }
+    },
+    "agent_prompt": "Draft Segment 3 outreach for Vela Systems. New CTO 91 days ago \u2014 1 day outside the 90-day validity window. Does this qualify for the narrow window?"
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['hypothesis','abstention']"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-002] CTO signal 91d > 90d window. Must not trigger Segment 3. Stale by 1 day \u2192 still stale. Strict enforcement test."
+  }
+}

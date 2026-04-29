@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0064",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "7073c4b4-cb85-4332-a9b5-4f2b8b6748d9",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Gradient Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.65,
+          "value": "5 open data roles",
+          "age_days": 68,
+          "validity_window_days": 60,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Gradient Labs using their hiring signal: '5 open data roles' (signal is 68 days old, validity window is 60 days)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Hiring 68d > 60d \u2192 stale. Do not assert current open roles."
+  }
+}

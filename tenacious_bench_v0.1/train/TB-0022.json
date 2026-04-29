@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0022",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "4c4e20a2-9699-47a8-a248-ae7cf6cbbcdf",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Beacon Systems",
+      "signals": {
+        "leadership": {
+          "conf": 0.72,
+          "value": "LinkedIn: new VP Eng posted 45 days ago",
+          "age_days": 45,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Beacon Systems referencing their leadership transition signal: 'LinkedIn: new VP Eng posted 45 days ago' (45 days ago)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] VP Eng change within 90-day window, conf=0.72 \u2192 inquiry (not assertive \u2014 single leadership signal)."
+  }
+}

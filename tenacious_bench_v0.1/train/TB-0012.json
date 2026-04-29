@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0012",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "92995764-0b20-48cd-8121-0b4641a7858b",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Centri Health",
+      "signals": {
+        "hiring": {
+          "conf": 0.38,
+          "value": "3 open engineering roles",
+          "age_days": 70,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft the opening line of a cold email for Centri Health. They have 3 open engineering roles (conf=0.38, 70 days old)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Age 70d > 60d window \u2192 stale_flag required. Hiring conf=0.38, 3 roles \u2192 hypothesis tier."
+  }
+}

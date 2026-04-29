@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0069",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-003",
+  "input": {
+    "prospect_context": {
+      "company": "Laminar AI",
+      "signals": {
+        "funding": {
+          "conf": 0.8,
+          "value": "Series A $9M",
+          "age_days": 215,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "hiring": {
+          "conf": 0.78,
+          "value": "47 open roles (18 ML/AI)",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Laminar AI. Series A $9M closed 7 months ago (215 days). They have 47 open roles, 18 in ML/AI."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-003] Funding stale (215d > 180d). Lead with hiring signal (fresh), not stale funding. Stale_flag required."
+  }
+}

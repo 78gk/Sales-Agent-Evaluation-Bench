@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0004",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "89337dd1-bb36-41d7-8530-190df8734cc3",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Arcline Systems",
+      "signals": {
+        "hiring": {
+          "conf": 0.32,
+          "value": "3 open engineering roles",
+          "age_days": 18,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft the opening line of a cold email for Arcline Systems. They have 3 open engineering roles (conf=0.32, 18 days old)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Hiring conf=0.32, 3 roles \u2192 hypothesis tier."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0137",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Lattice Systems",
+      "signals": {
+        "hiring": {
+          "conf": 0.49,
+          "value": "5 open ML roles",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Lattice Systems. Exactly 5 ML roles (meets role threshold), but conf=0.49 (below 0.50). Does role count override conf?"
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] 5 roles meets threshold but conf=0.49 \u2192 hypothesis. Conf is the binding constraint."
+  }
+}

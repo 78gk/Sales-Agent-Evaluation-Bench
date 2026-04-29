@@ -107,7 +107,9 @@ HuggingFace Hub under CC-BY-4.0. Held-out partition released only after leaderbo
 Yes. All signal data is synthetic/derived. No external data sources required to run the evaluator.
 
 **What license?**  
-CC-BY-4.0.
+CC-BY-4.0. This license was chosen to allow open research reuse and derivative benchmarks
+while requiring attribution — appropriate for an academic evaluation dataset where citation
+credit matters but broad adoption is desired.
 
 **Have any third-party IP restrictions been identified?**  
 No. All company/signal data is fictitious.
@@ -129,11 +131,61 @@ GitHub issues on the repo. PRs accepted for additional adversarial tasks after h
 
 ## Pushkarna & Zaldivar — Layered Detail
 
-| Layer | Detail |
+*Following Pushkarna & Zaldivar, FAccT 2022 — Data Cards: Purposeful and Transparent Dataset
+Documentation for Responsible AI*
+
+### Telescopic Overview
+
+Tenacious-Bench v0.1 is a 250-task, machine-verifiable evaluation benchmark for AI outbound
+sales agents, targeting confidence-calibrated phrasing decisions. It fills four gaps in
+τ²-Bench (retail domain) that are directly responsible for the highest-cost failure modes
+observed in the Week 10 Tenacious Conversion Engine: Signal Over-Claiming, Bench
+Over-Commitment, Multi-Thread Leakage, and Stale-Signal Disclosure.
+
+### Periscopic Overview
+
+| Attribute | Value |
 |---|---|
-| **Intended use** | Evaluating and fine-tuning AI outbound sales agents on confidence-calibrated phrasing decisions |
-| **Out of scope** | General customer service, retail Q&A, any domain outside B2B sales |
-| **Known limitations** | Tasks are synthetic/derived; real prospect diversity not captured; single-author adversarial slice may miss failure modes the author did not anticipate |
-| **Risks** | Held_out partition could be used to game the leaderboard if released early — sealed until program staff sign-off |
-| **Mitigation** | 3-layer contamination check; held_out gitignored; sealed hash committed on Day 2 |
-| **Sensitive attributes** | None — all entities are fictitious |
+| Total tasks (target) | 250 |
+| Train / Dev / Held_out split | 50% / 30% / 20% |
+| Authoring modes | Trace-derived (~30%), Programmatic (~30%), Multi-LLM synthesis (~25%), Adversarial (~15%) |
+| Primary failure category | Signal Over-Claiming (~40% of tasks) |
+| Scoring dimensions | 4 (phrasing_tier, routed_to_human, stale_disclosed, thread_clean) |
+| Pass threshold | ≥0.60 weighted score |
+| Intended use | LoRA SFT training + A/B ablation on held_out split |
+| Out of scope | General customer service, retail Q&A, non-B2B sales domains |
+| Known limitations | Tasks are synthetic/derived; single-author adversarial slice may miss failure modes not anticipated by the author; real prospect diversity not captured |
+| Risks | Held_out partition could game leaderboard if released early |
+| Mitigation | 3-layer contamination check; held_out gitignored; SHA-256 seal committed before training |
+
+### Microscopic Documentation
+
+**Schema fields (per task):**
+
+| Field | Type | Description |
+|---|---|---|
+| `task_id` | string | Unique ID, format TB-NNNN |
+| `version` | string | Schema version, e.g. "v0.1" |
+| `category` | string | Failure category from `seeds/failure_taxonomy.md` |
+| `source_mode` | string | trace_derived / programmatic / synthesis / adversarial |
+| `seed_trace_id` | string | Source trace from `seeds/trace_log.jsonl` (trace_derived only) |
+| `input.prospect_context` | object | Company signals with confidence scores and age_days |
+| `input.agent_prompt` | string | The prompt presented to the agent |
+| `expected.phrasing_tier` | string | assertive / inquiry / hypothesis / abstention |
+| `expected.routed_to_human` | boolean | Whether human handoff is required |
+| `expected.stale_disclosed` | boolean | Whether staleness must be surfaced |
+| `scoring.dimensions` | array | Per-dimension weight + machine-verifiable check expression |
+| `scoring.pass_threshold` | float | Minimum weighted score to pass (default 0.60) |
+| `metadata.authored_by` | string | Author name |
+| `metadata.authored_date` | string | ISO date of authoring |
+
+**Example record (abbreviated):**
+```json
+{
+  "task_id": "TB-0001",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "expected": { "phrasing_tier": "hypothesis", "stale_disclosed": true },
+  "scoring": { "pass_threshold": 0.60 }
+}
+```

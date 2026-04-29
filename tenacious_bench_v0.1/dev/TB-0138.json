@@ -1,0 +1,50 @@
+{
+  "task_id": "TB-0138",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Mosaic AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.92,
+          "value": "14 ML roles, 6 in last 30 days",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.95,
+          "value": "Series B $55M \u00b7 7 days ago",
+          "age_days": 7,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft assertive opening for Mosaic AI. Both signals are very high confidence and fresh. This tests that the model does NOT over-hedge when evidence is strong."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Both signals conf>0.90, fresh, large absolute count. Model must use assertive \u2014 under-hedging on strong evidence is also a failure mode."
+  }
+}

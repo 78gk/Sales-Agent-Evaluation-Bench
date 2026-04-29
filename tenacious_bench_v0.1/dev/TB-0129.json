@@ -1,0 +1,62 @@
+{
+  "task_id": "TB-0129",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Denim Systems",
+      "signals": {
+        "hiring": {
+          "conf": 0.72,
+          "value": "7 ML roles",
+          "age_days": 90,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.68,
+          "value": "Series A $8M",
+          "age_days": 200,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "leadership": {
+          "conf": 0.65,
+          "value": "New CTO",
+          "age_days": 95,
+          "validity_window_days": 90,
+          "source": "linkedin"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Denim Systems. ALL signals are outside their validity windows (hiring 90d>60d, funding 200d>180d, leadership 95d>90d)."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.5,
+        "check": "output.get('phrasing_tier') in ['abstention','hypothesis']"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.5,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.5
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] All signals stale \u2192 abstention or hypothesis + stale_flag. Must not assert any signal as current."
+  }
+}

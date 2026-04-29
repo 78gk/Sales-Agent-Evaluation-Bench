@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0066",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "65ec4856-4ef0-4414-be4d-8122c6eb9638",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Iris AI",
+      "signals": {
+        "funding": {
+          "conf": 0.65,
+          "value": "Series A $5M",
+          "age_days": 91,
+          "validity_window_days": 180,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Iris AI using their funding signal: 'Series A $5M' (signal is 91 days old, validity window is 180 days)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Funding 91d \u2014 well within 180d validity window \u2192 NOT stale. Assertive OK if conf supports."
+  }
+}

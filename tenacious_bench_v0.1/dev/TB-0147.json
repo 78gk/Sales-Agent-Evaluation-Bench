@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0147",
+  "version": "v0.1",
+  "category": "icp_misclassification",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-003",
+  "input": {
+    "prospect_context": {
+      "company": "Upsilon Bio",
+      "signals": {
+        "funding": {
+          "conf": 0.88,
+          "value": "Series B $28M",
+          "age_days": 185,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "hiring": {
+          "conf": 0.82,
+          "value": "15 open ML roles",
+          "age_days": 6,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Upsilon Bio. Funding stale by 5 days (185d > 180d). Strong fresh hiring. Do NOT reference the funding event."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['inquiry','assertive']"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-003] Funding stale by 5 days. Only 1 valid high-conf signal (hiring) \u2192 inquiry, not assertive. Must disclose stale funding."
+  }
+}

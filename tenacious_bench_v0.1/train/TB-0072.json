@@ -1,0 +1,60 @@
+{
+  "task_id": "TB-0072",
+  "version": "v0.1",
+  "category": "multi_thread_leakage",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-019",
+  "input": {
+    "prospect_context": {
+      "company": "Orbit Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.82,
+          "value": "6 ML roles",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft the VP Engineering outreach for Orbit Analytics. Context: there is a SEPARATE active thread with their co-founder (Segment 1, growth pitch). Do NOT reference the co-founder thread.",
+    "thread_context": [
+      {
+        "role": "agent",
+        "text": "Hi [Co-founder], given your fresh Series A we'd love to discuss...",
+        "target": "co-founder"
+      },
+      {
+        "role": "prospect",
+        "text": "Sure, happy to chat next week.",
+        "target": "co-founder"
+      }
+    ]
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.4,
+        "check": "output.get('phrasing_tier') in ['inquiry','assertive']"
+      },
+      {
+        "name": "thread_isolation",
+        "weight": 0.6,
+        "check": "'co-founder' not in output.get('text','').lower() and 'as i mentioned' not in output.get('text','').lower() and 'your colleague' not in output.get('text','').lower() and 'our previous conversation' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-019] VP Eng thread must not reference co-founder thread. Cross-thread leakage = permanent account loss."
+  }
+}

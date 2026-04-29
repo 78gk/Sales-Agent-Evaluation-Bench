@@ -1,0 +1,55 @@
+{
+  "task_id": "TB-0042",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Vector Cloud",
+      "signals": {
+        "hiring": {
+          "conf": 0.82,
+          "value": "8 open engineering roles",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        },
+        "funding": {
+          "conf": 0.82,
+          "value": "Series B $22M",
+          "age_days": 190,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Vector Cloud. Hiring: 8 open roles (conf=0.82). Funding: Series B $22M (190 days ago, conf=0.82)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] hiring strong but funding stale (190d > 180d) \u2192 can't use 2 fresh high signals \u2192 inquiry + stale_flag."
+  }
+}

@@ -3,7 +3,7 @@
 **Project:** Ground Truth — Building the Sales Evaluation Bench and Aligning the Conversion Engine  
 **Author:** Kirubel Tewodros  
 **Cohort:** 10 Academy TRP1  
-**Status:** 🟡 Day 0 setup — bench authoring in progress
+**Status:** 🟢 Day 3 complete — 155 tasks authored, held_out sealed, LoRA training Day 4
 
 ---
 
@@ -19,6 +19,8 @@ A custom evaluation benchmark (Tenacious-Bench v0.1) for the Week 10 Conversion 
 
 ## Quick Start
 
+**Requirements:** Python 3.9+
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -27,9 +29,15 @@ pip install -r requirements.txt
 # Validate the schema + 3 dummy tasks
 python scoring_evaluator.py --validate
 
-# Score a task
-python scoring_evaluator.py --task tenacious_bench_v0.1/dev/task_001.json --output agent_output.txt
+# Score a single task
+python scoring_evaluator.py --task tenacious_bench_v0.1/train/TB-0001.json --output agent_output.json
+
+# Batch score a split
+python scoring_evaluator.py --batch tenacious_bench_v0.1/train/ --outputs outputs/
 ```
+
+**Key dependencies:** `sentence-transformers`, `transformers`, `peft`, `trl`, `datasets`,
+`huggingface-hub`, `openai` (OpenRouter), `pytest`
 
 ---
 
@@ -75,11 +83,38 @@ memo.pdf                        # 2-page executive memo (generated at submission
 
 ---
 
+## Key Artifacts
+
+| Artifact | Path | Purpose |
+|---|---|---|
+| [Audit Memo](./audit_memo.md) | `audit_memo.md` | What τ²-Bench misses and why Signal Over-Claiming is the target |
+| [Datasheet](./datasheet.md) | `datasheet.md` | Gebru 7-section + Pushkarna layered dataset documentation |
+| [Methodology](./methodology.md) | `methodology.md` | Path A declaration, partitioning, contamination protocol |
+| [Synthesis Memos](./synthesis_memos/) | `synthesis_memos/` | Critical engagement memos for required reading papers |
+| [Schema](./schema.json) | `schema.json` | Task schema + 3 example tasks |
+| [Evidence Graph](./evidence_graph.json) | `evidence_graph.json` | Provenance for every numeric claim in memo and blog |
+| [Cost Log](./cost_log.md) | `cost_log.md` | Running API cost log (hard cap: $10) |
+
+---
+
+## What's Next (Remaining Work)
+
+| Deadline | Item |
+|---|---|
+| **Wednesday 21:00 UTC** | ~~README~~, ~~audit_memo~~, ~~schema~~, ~~scoring_evaluator~~, ~~dataset skeleton~~, ~~datasheet~~, ~~methodology~~, ~~generation_scripts~~, ~~inter_rater_agreement~~, memo.pdf |
+| **Day 4** | Colab T4 — 5-task dummy LoRA pipeline test → real 125-task training run on Qwen 3.5 |
+| **Day 4–5** | OpenRouter synthesis: 60 tasks (Qwen3-80B generates, DeepSeek V3.2 judges) to reach 250 total |
+| **Day 5** | Delta A/B ablations on held_out; fill `ablations/ablation_results.json` + C-006/C-007 |
+| **Day 5–6** | Write remaining 6 synthesis memos |
+| **Saturday 21:00 UTC** | HuggingFace dataset + model push, model_card, blog post, τ²-Bench GitHub issue |
+
+---
+
 ## Key Numbers (Week 10 Baseline)
 
 | Metric | Value |
 |---|---|
-| τ²-Bench pass@1 | 0.8333 (p=0.009) |
+| τ²-Bench pass@1 | 0.8333 (p=0.009, from Week 10 report) |
 | Signal Over-Claiming trigger rate | 0.55 (P-006–P-010) |
 | Cost per qualified lead | $0.52 |
 | Stall rate | 11.1% |

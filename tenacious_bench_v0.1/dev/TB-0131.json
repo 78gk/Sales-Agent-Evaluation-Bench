@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0131",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-007",
+  "input": {
+    "prospect_context": {
+      "company": "Faro Data",
+      "signals": {
+        "jobdensity": {
+          "conf": 0.25,
+          "value": "single BuiltWith Spark indicator",
+          "age_days": 20,
+          "validity_window_days": 90,
+          "source": "builtwith"
+        }
+      }
+    },
+    "agent_prompt": "Draft AI maturity framing for Faro Data. Only a single BuiltWith Spark indicator available, conf=0.25 (boundary threshold)."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') in ['hypothesis','abstention']"
+      }
+    ],
+    "pass_threshold": 1.0
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-007] Conf=0.25 boundary: hypothesis or abstention acceptable. Must not use inquiry or assertive."
+  }
+}

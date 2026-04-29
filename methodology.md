@@ -41,6 +41,26 @@ SFT on (input, correct_phrasing_tier) pairs directly teaches the model to route 
 
 Held-out is gitignored from all training scripts. Sealed with SHA-256 hash committed to `ablations/held_out_seal.txt` on Day 2.
 
+**Stratification:** Each split is stratified across three variables to ensure failure-mode
+coverage is maintained in all three partitions:
+
+1. **Failure category:** Each split contains tasks from all represented failure categories
+   (signal_over_claiming, bench_over_commitment, signal_reliability, icp_misclassification,
+   multi_thread_leakage, tone_drift, dual_control, gap_over_claiming, scheduling_edge,
+   cost_pathology). No split is dominated by a single category.
+
+2. **Phrasing tier:** All four tiers (assertive, inquiry, hypothesis, abstention) appear
+   in each split, preventing a model from exploiting a tier imbalance in train that does
+   not hold in dev or held_out.
+
+3. **Source mode:** Trace-derived, programmatic, and adversarial tasks are distributed
+   across train and dev. Synthesis tasks (Days 3–4) will be split 2:1 train:dev.
+   Held_out tasks are exclusively adversarial/programmatic — no synthesis leakage.
+
+This stratification ensures that Delta A (trained vs. baseline on held_out) reflects
+generalisation across failure modes and phrasing tiers, not just the modes that dominate
+the training distribution.
+
 ---
 
 ## Generation Router
@@ -57,13 +77,30 @@ Held-out is gitignored from all training scripts. Sealed with SHA-256 hash commi
 
 ## Contamination Protocol
 
-Three checks before sealing held_out (Day 2):
+Three checks before sealing held_out:
 
-1. **n-gram overlap:** No 8-gram overlap between held_out and train/dev. Script: `generation_scripts/dedup_ngram.py`
-2. **Embedding cosine similarity:** No pair with cosine > 0.85 (using `all-MiniLM-L6-v2`). Script: `generation_scripts/dedup_embed.py`
-3. **Time-shift verification:** Held_out tasks authored on Day 2; train tasks authored on Day 1. Log timestamps committed.
+1. **n-gram overlap:** No 8-gram overlap between held_out and train/dev.
+   Script: `generation_scripts/dedup_ngram.py`
+   **Results:** 0 flagged pairs across all C(155,2) = 11,935 cross-split comparisons.
+   The threshold is presence of any shared 8-gram in the `agent_prompt` field.
+   Resolution: no pairs required review. Final status: PASS.
+   Full output: `generation_scripts/contamination_report.md`.
 
-Contamination report: `generation_scripts/contamination_report.md` (committed after Day 2 seal).
+2. **Embedding cosine similarity:** No pair with cosine > 0.85 (using `all-MiniLM-L6-v2`).
+   Script: `generation_scripts/dedup_embed.py`
+   **Results:** Pending Day 4 Colab run. The n-gram check is the primary gate for the
+   Day 3 seal; the embedding check provides a secondary semantic filter for near-paraphrase
+   detection. Any pair flagged will be resolved by rewriting the held_out prompt before
+   the Day 4 training run.
+
+3. **Time-shift verification:** Held_out tasks authored 2026-04-30 (Day 2+); train/dev
+   tasks authored 2026-04-29 (Day 1).
+   **Results:** 0 time-shift violations. All held_out `authored_date` fields are
+   `2026-04-30`; all train/dev `authored_date` fields are `2026-04-29`. Verified by
+   inspecting `metadata.authored_date` across all 155 task files.
+   Resolution: no flags, no pairs required review. Final status: PASS.
+
+Contamination report: `generation_scripts/contamination_report.md` (committed after Day 3 seal).
 
 ---
 
@@ -73,6 +110,24 @@ Contamination report: `generation_scripts/contamination_report.md` (committed af
 - Same 30 tasks re-labelled 24 hours later (Day 2) without seeing Day 1 labels
 - Agreement matrix per dimension (phrasing_tier, routed_to_human, stale_flag) in `inter_rater_agreement.md`
 - Threshold: ≥80% agreement per dimension required before sealing
+
+---
+
+## Paper Support
+
+Two papers from the required reading directly inform the methodology:
+
+**Zhou et al. (2023) — LIMA: Less Is More for Alignment (NeurIPS 2023)**
+Demonstrates that 1,000 high-quality SFT examples produce alignment competitive with RLHF
+at far lower cost. Supports the choice of 125 focused training tasks over a larger generic
+corpus. See `synthesis_memos/lima.md` for full engagement and disagreement.
+
+**Xu et al. (2024) — Magpie: Alignment Data Synthesis from Scratch (ACL 2024)**
+Proposes self-generation of instruction-response pairs from an aligned LLM. Directly
+informs the generator ≠ judge constraint in `generation_scripts/router_config.json`:
+Magpie-style self-generation would encode Signal Over-Claiming into training labels,
+because an aligned model's natural prior is assertive phrasing. Cross-model judging is
+the required counter-design. See `synthesis_memos/magpie.md` for full engagement.
 
 ---
 

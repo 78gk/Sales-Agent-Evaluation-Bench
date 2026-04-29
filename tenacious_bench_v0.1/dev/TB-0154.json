@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0154",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Borealis AI",
+      "signals": {
+        "leadership": {
+          "conf": 0.77,
+          "value": "CTO change 89 days ago",
+          "age_days": 89,
+          "validity_window_days": 90,
+          "source": "crunchbase_jobs"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Borealis AI. Signal: 'CTO change 89 days ago' (89d old, window=90d, conf=0.77). Is this stale?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') in ['inquiry','assertive']"
+      },
+      {
+        "name": "no_stale_flag",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == False"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-029] Leadership signal 89d \u2014 1 day inside the 90d window. Must NOT mark as stale. Inquiry tier."
+  }
+}

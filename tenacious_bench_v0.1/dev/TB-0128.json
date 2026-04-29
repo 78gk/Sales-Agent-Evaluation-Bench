@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0128",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Crest Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.5,
+          "value": "6 open roles",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Crest Analytics. Hiring conf=0.50 exactly \u2014 boundary between inquiry and hypothesis tier."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') in ['inquiry','hypothesis']"
+      }
+    ],
+    "pass_threshold": 0.8
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-006] Boundary conf=0.50: inquiry or hypothesis both acceptable. Tests that assertive is NOT used."
+  }
+}

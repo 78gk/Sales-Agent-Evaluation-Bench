@@ -1,0 +1,44 @@
+{
+  "task_id": "TB-0023",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "65ec4856-4ef0-4414-be4d-8122c6eb9638",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Cascade Analytics",
+      "signals": {
+        "leadership": {
+          "conf": 0.83,
+          "value": "LinkedIn: new CTO posted 10 days ago",
+          "age_days": 10,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Cascade Analytics referencing their leadership transition signal: 'LinkedIn: new CTO posted 10 days ago' (10 days ago)."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] Confirmed CTO change 10d ago, conf=0.83 \u2192 assertive if combined with other signals."
+  }
+}

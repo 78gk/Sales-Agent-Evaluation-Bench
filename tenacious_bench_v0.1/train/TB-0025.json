@@ -1,0 +1,49 @@
+{
+  "task_id": "TB-0025",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "trace_derived",
+  "seed_trace_id": "7507b00f-c046-467f-a7cd-0cb78c2ad833",
+  "seed_probe_id": "P-008",
+  "input": {
+    "prospect_context": {
+      "company": "Echo AI",
+      "signals": {
+        "leadership": {
+          "conf": 0.68,
+          "value": "LinkedIn: new CTO posted 95 days ago",
+          "age_days": 95,
+          "validity_window_days": 90,
+          "source": "linkedin_news"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Echo AI referencing their leadership transition signal: 'LinkedIn: new CTO posted 95 days ago' (95 days ago). Note: signal may be outside validity window."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "[P-008] CTO signal 95d old > 90d validity window \u2192 stale. Still inquiry not assertive."
+  }
+}
