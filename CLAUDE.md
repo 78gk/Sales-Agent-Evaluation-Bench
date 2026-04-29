@@ -27,6 +27,25 @@ Week 11 of 10 Academy TRP1. Build **Tenacious-Bench v0.1** — a custom evaluati
 
 ---
 
+## Current status (as of rubric-remediation commit 048e358, 2026-04-30)
+
+**Interim report (memo.md/memo.pdf):** rubric-remediated. Cross-tab composition tables,
+4 worked examples with step-by-step rubric scoring, Cohen's κ IRA analysis all added.
+
+**Interim repo (GitHub):** rubric-remediated. Methodology.md has argued path justification
+(cause→inference→conclusion) and embedding similarity results. Generation pipeline has
+runnable synthesis_generator.py with CHEAP_MODELS/EVAL_TIER_MODELS, named threshold
+constants, assert_no_leakage(), and main() entry points in all scripts.
+
+**GitHub remote:** https://github.com/78gk/Sales-Agent-Evaluation-Bench  
+
+**Dataset:** 155 tasks total — train=75, dev=30, held_out=50 (sealed, gitignored).
+All 155 pass `python scoring_evaluator.py --validate` (3/3 OK, 3/3 PASS).
+
+**Next:** Day 4 — Colab T4 LoRA training on Qwen 3.5. See Day-by-day plan below.
+
+---
+
 ## Repo state (as of bootstrap commit 1650bb3, 2026-04-29)
 
 ### Done — do not recreate
@@ -102,13 +121,13 @@ Week 11 of 10 Academy TRP1. Build **Tenacious-Bench v0.1** — a custom evaluati
 
 ## Day-by-day plan
 
-**Day 1 (done):** Repo bootstrap, schema, scoring_evaluator, seeds copied  
-**Day 2:** Author ~75 trace-derived tasks from `seeds/trace_log.jsonl` into train/dev  
-**Day 3:** Contamination checks, seal held_out (SHA-256 hash → `ablations/held_out_seal.txt`), inter-rater labelling  
-**Day 3–4:** Multi-LLM synthesis via OpenRouter (router_config.json) — dev-tier only  
-**Day 4:** Colab T4 — Unsloth dummy 5-task LoRA → HF Hub push test, then real training run  
-**Day 5:** Delta A/B ablations on held_out, write synthesis memos  
-**Day 6:** Blog post (HF community or Substack), community engagement (tau²-Bench GitHub issue), final memo.pdf  
+**Day 1 (DONE):** Repo bootstrap, schema, scoring_evaluator, seeds copied  
+**Day 2 (DONE):** 75 train tasks + 30 dev tasks authored  
+**Day 3 (DONE):** 50 held_out tasks sealed, contamination checks (0 n-gram overlaps, 0 embed overlaps), inter-rater labelling (κ≈0.95), synthesis memos LIMA + Magpie, interim submissions  
+**Day 3 post (DONE):** Rubric remediation — memo.md cross-tabs + worked examples; methodology.md argued justification; synthesis_generator.py + dedup_embed.py created; main() guards added  
+**Day 4 (NEXT):** Colab T4 — `pip install unsloth[colab-new]`, 5-task dummy LoRA on Qwen 3.5 0.8B → HF Hub push test, then real 75-task training run (rank=16, alpha=32, q_proj/v_proj, 16-bit). Also run `synthesis_generator.py --count 60` to reach 250-task corpus.  
+**Day 5:** Delta A/B ablations on held_out (fill `ablations/ablation_results.json`, update C-006/C-007 in evidence_graph.json), write 6 remaining synthesis memos  
+**Day 6:** Model card, blog post (HF community or Substack), community engagement (τ²-Bench GitHub issue), HuggingFace dataset + model push (after staff sign-off)  
 
 ---
 
