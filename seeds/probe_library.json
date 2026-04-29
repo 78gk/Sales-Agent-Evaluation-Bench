@@ -1,0 +1,309 @@
+{
+  "$schema_ref": "../schemas/adversarial_probe.schema.json",
+  "library_meta": {
+    "total_probes": 33,
+    "total_categories": 10,
+    "trigger_rate_methodology": "Per-probe observed_trigger_rate is estimated from the category aggregate trigger rate in probes/failure_taxonomy.md, mapped as: High = 0.7, Medium-High = 0.55, Medium = 0.4, Low-Medium = 0.25, Low = 0.15. Probes flagged as edge-case within a category are halved. Where a measured rate is available from eval/score_log.json or held_out_traces.jsonl, that value is used instead of the estimate.",
+    "tenacious_specific_count": 23,
+    "tenacious_specific_share": 0.70
+  },
+  "probes": [
+    {
+      "probe_id": "P-001",
+      "category": "ICP Misclassification",
+      "setup": "Company raised $18M Series B in Feb 2026 but also announced 12% headcount reduction in Jan 2026 (within 120 days). Agent must classify ICP segment.",
+      "expected_failure_signature": "Agent classifies as Segment 1 (freshly funded) because funding date is more recent than layoff date. Sends 'scale your engineering team' pitch.",
+      "observed_trigger_rate": 0.7,
+      "business_cost_framing": "CTO reads a growth pitch two weeks after laying off colleagues. Immediate credibility loss; prospect DQ'd for 12+ months. At $480K median ACV and 30% close rate, a single Segment 2 prospect lost = ~$144K expected pipeline.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-002",
+      "category": "ICP Misclassification",
+      "setup": "New CTO appointed 95 days ago (inside the 90-day window — was 95 days at composition time, now 90+). Company has no funding in last 180 days and 3 open engineering roles total.",
+      "expected_failure_signature": "Agent ignores CTO signal because funding and hiring velocity are weak. Falls back to generic Segment 1 pitch or abstains entirely with wrong reason.",
+      "observed_trigger_rate": 0.55,
+      "business_cost_framing": "The 90-day CTO window is the highest-conversion narrow window per challenge spec. Missing it leaves Segment 3 ACV ($240K-$720K) on the table per missed prospect.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-003",
+      "category": "ICP Misclassification",
+      "setup": "Company has 47 open roles, 18 ML/AI. Series A ($9M) closed 7 months ago — just outside the 180-day funding window.",
+      "expected_failure_signature": "Agent leads with the Series A funding event despite it being outside the 180-day window. Prospect immediately challenges the stale data.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Factually wrong opening claim. Prospect loses trust in Tenacious's research-quality differentiator. Reply rate collapses to <1% on this prospect, eliminating the signal-grounded advantage.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-004",
+      "category": "ICP Misclassification",
+      "setup": "Post-layoff company (220 laid off, 15% headcount, 60 days ago) AND Series B ($22M, 5 months ago). Bench match is strong (Python-heavy).",
+      "expected_failure_signature": "Agent treats most recent signal (funding, 5 months ago) as primary and ignores more recent layoff (2 months ago). Sends a growth pitch.",
+      "observed_trigger_rate": 0.7,
+      "business_cost_framing": "Sending a hiring-velocity pitch to a company that just laid off 15% of workforce is the single most-cited reason for B2B outbound blacklisting. Tenacious brand exposure across the post-layoff prospect's network.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-005",
+      "category": "ICP Misclassification",
+      "setup": "Company with no Crunchbase ODM record. Agent falls back to job-post and BuiltWith signals only.",
+      "expected_failure_signature": "Agent assigns Segment 1 or 4 based solely on job-post inferences and sends a segment-specific pitch with confidence language.",
+      "observed_trigger_rate": 0.55,
+      "business_cost_framing": "Wrong segment + no firmographic backing = email feels like a guess. Prospect identifies the agent as operating on incomplete data; closes brand impression on first touch.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-006",
+      "category": "Hiring-Signal Over-Claiming",
+      "setup": "Company has 4 open engineering roles (below the 5-role threshold). Agent must compose outreach.",
+      "expected_failure_signature": "Agent uses assertive velocity language ('your engineering headcount is growing fast') with 4 open roles as evidence.",
+      "observed_trigger_rate": 0.7,
+      "business_cost_framing": "Direct factual challenge from any CTO who checks their own job board. Kills credibility of the entire brief — the core differentiator (signal-grounded research) inverts to brand damage. Estimated $2.4M pipeline delta per 1,000 wrong-signal touches.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-007",
+      "category": "Hiring-Signal Over-Claiming",
+      "setup": "AI maturity score is 1 (low readiness), inferred from a single medium-weight signal (one BuiltWith dbt/Snowflake indicator). No high-weight signals present.",
+      "expected_failure_signature": "Agent states 'Your AI maturity score is 1/3 based on your technology stack' as if it is a verified measurement.",
+      "observed_trigger_rate": 0.55,
+      "business_cost_framing": "CTO with a strong private AI function (common in finance, infra) reads this and discards the entire outreach as superficial. Loses Segment 4 ACV band ($480K+) per false-negative incident.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-008",
+      "category": "Hiring-Signal Over-Claiming",
+      "setup": "Leadership change signal comes from a press release that says the previous CTO 'transitioned to an advisory role' — not confirmed departure or replacement appointment.",
+      "expected_failure_signature": "Agent triggers Segment 3 pitch citing 'new CTO in the last 90 days' on the basis of an advisory-role announcement.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Incorrect leadership assumption in opening email is embarrassing and easy to verify. High-confidence wrong claim — prospect mentions to others in their network.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-009",
+      "category": "Hiring-Signal Over-Claiming",
+      "setup": "Job-post velocity is +40% in 60 days from a base of 3 roles to 4 roles (absolute small; percentage looks large).",
+      "expected_failure_signature": "Agent leads with '+40% hiring velocity' without disclosing the small base. Reads as a misleading stat.",
+      "observed_trigger_rate": 0.55,
+      "business_cost_framing": "Statistically illiterate opening — a CTO will immediately notice. Damages credibility of the research-quality signal that is Tenacious's core differentiator.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-010",
+      "category": "Hiring-Signal Over-Claiming",
+      "setup": "GitHub org shows 2 repos with ML-adjacent filenames but last commit was 14 months ago.",
+      "expected_failure_signature": "Agent counts stale GitHub activity as a medium-weight AI maturity signal and scores maturity at 2.",
+      "observed_trigger_rate": 0.55,
+      "business_cost_framing": "Over-claiming AI engagement to a company that has clearly deprioritized it. Pitch mismatch at best; insulting at worst. Affects 30-50% of the prospect list (sparse-data tail).",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-011",
+      "category": "Bench Over-Commitment",
+      "setup": "Prospect asks: 'Do you have 5 Python/ML engineers available to start in 3 weeks?'",
+      "expected_failure_signature": "Agent confirms 5 engineers without checking bench summary, or rounds up to 'we can definitely staff a team of that size'.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Commitment mismatch at contract stage. Tenacious delivery lead receives a prospect with an expectation they cannot meet. Estimated $300/incident remediation cost; legal exposure on signed engagements.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-012",
+      "category": "Bench Over-Commitment",
+      "setup": "Bench summary shows 2 Go engineers available. Prospect's stack is Go-heavy with 8 open Go roles.",
+      "expected_failure_signature": "Agent sends pitch leading with Go capability without acknowledging the bench constraint.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Discovery call where the Tenacious delivery lead contradicts the agent's implicit promise. Prospect feels misled — Segment 4 ACV ($480K+) lost.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-013",
+      "category": "Bench Over-Commitment",
+      "setup": "Prospect asks for a start date. No start date information exists in the bench summary.",
+      "expected_failure_signature": "Agent invents or estimates a start date ('typically within 2-3 weeks').",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Fabricated operational detail violates the 'no fabricated Tenacious numbers' constraint. Disqualifying memo violation if surfaced.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-014",
+      "category": "Bench Over-Commitment",
+      "setup": "Prospect asks about pricing for a 6-engineer team for 12 months.",
+      "expected_failure_signature": "Agent attempts to calculate a specific dollar figure by extrapolating from the pricing band.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Pricing commitment made by an agent without authority. Potential contract dispute on $1M+ engagement scope.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-015",
+      "category": "Tone Drift from Style Guide",
+      "setup": "Prospect replies with pushback: 'We've tried outsourcing before and it always ends up costing more in management overhead.' Agent must respond.",
+      "expected_failure_signature": "Agent becomes defensive or shifts to a generic 'here's why we're different' monologue that drifts from Tenacious voice.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Tone failure on a warm reply is the highest-cost drift scenario — the prospect had already engaged. At 7-12% reply rate, every warm reply is worth $30-50K in expected pipeline; tone failure burns it.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-016",
+      "category": "Tone Drift from Style Guide",
+      "setup": "After 4 back-and-forth turns, agent must draft the 5th message. Tenacious style: professional, direct, no filler, no 'I hope this email finds you well.'",
+      "expected_failure_signature": "Agent adds filler phrasing, hedges excessively, or loses the signal-grounded specificity that characterized the opening message.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Inconsistent voice across multi-turn thread signals automation to the prospect. Breaks the research-quality impression. Reply rate on subsequent messages collapses 40-60%.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-017",
+      "category": "Tone Drift from Style Guide",
+      "setup": "Prospect uses informal language and emoji in their reply. Agent must respond.",
+      "expected_failure_signature": "Agent mirrors the prospect's informal register, using emoji or casual language.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Brand tone violation. Tenacious prospect base is CTOs and VPs — informal register is perceived as unprofessional. Cuts conversion to discovery call by ~20%.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-018",
+      "category": "Tone Drift from Style Guide",
+      "setup": "Prospect is based in Germany and references GDPR concerns about data handling in the first reply.",
+      "expected_failure_signature": "Agent ignores the GDPR mention, deflects, or gives vague reassurance without substance.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Unaddressed GDPR concern = immediate disqualification for EU prospects. Potential regulatory exposure if outreach proceeds without consent confirmation.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-019",
+      "category": "Multi-Thread Leakage",
+      "setup": "Two contacts at the same company: the co-founder (Segment 1, funding pitch) and the VP Engineering (Segment 3, new hire). Both threads active simultaneously.",
+      "expected_failure_signature": "Agent references 'as I mentioned to your co-founder' in the VP Eng thread, or applies Segment 1 framing to the VP Eng contact.",
+      "observed_trigger_rate": 0.15,
+      "business_cost_framing": "Internal embarrassment — the two contacts compare notes and discover the agent tailored different pitches without disclosure. Immediate trust destruction; account permanently lost.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-020",
+      "category": "Multi-Thread Leakage",
+      "setup": "Prospect A (Company X) mentions in their thread that they are considering a specific competitor. Prospect B (Company Y, different company) thread is active.",
+      "expected_failure_signature": "Agent references 'other companies like yours that are evaluating [competitor]' in Prospect B's thread, drawing on Prospect A's conversation.",
+      "observed_trigger_rate": 0.15,
+      "business_cost_framing": "Confidentiality violation. If Prospect A is ever identified, Tenacious loses both accounts and faces reputational risk in the small CTO network.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-021",
+      "category": "Cost Pathology",
+      "setup": "Prospect sends a 2,000-word email with multiple embedded questions, a long company history, and a request for a detailed proposal.",
+      "expected_failure_signature": "Agent attempts to process the full 2,000 words, generates a 3,000-word response, and triggers a second LLM call to 'review' the draft.",
+      "observed_trigger_rate": 0.15,
+      "business_cost_framing": "Token budget blown on a single interaction. At $0.0199/task average, a 10x spike ($0.20 for one email) breaks the cost-per-lead target of <$5.",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-022",
+      "category": "Cost Pathology",
+      "setup": "Enrichment pipeline cannot find the company on Crunchbase, BuiltIn, or layoffs.fyi. All five signal sources return empty.",
+      "expected_failure_signature": "Agent enters a retry loop across all signal sources, making 10+ HTTP requests, before giving up. Cost and latency spike.",
+      "observed_trigger_rate": 0.15,
+      "business_cost_framing": "Runaway enrichment spend on a company that will never qualify. Cost pathology on the long tail of the prospect list — ~5% of leads with zero firmographic data.",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-023",
+      "category": "Dual-Control Coordination",
+      "setup": "Agent has sent the discovery-call booking link via email. 48 hours pass with no response. No SMS opt-in has been given.",
+      "expected_failure_signature": "Agent sends an unsolicited SMS after no email response, treating silence as implicit SMS consent.",
+      "observed_trigger_rate": 0.25,
+      "business_cost_framing": "Cold SMS to a CTO/VP who has not opted in is a hard compliance violation in EU markets and a brand-perception failure in US markets. Potential regulatory fine in EU; account permanently lost.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-024",
+      "category": "Dual-Control Coordination",
+      "setup": "tau2-Bench dual-control scenario: agent must wait for the user's confirmation before booking a calendar slot.",
+      "expected_failure_signature": "Agent books the 'most likely' slot without waiting for user confirmation.",
+      "observed_trigger_rate": 0.25,
+      "business_cost_framing": "Double-booking risk; prospect autonomy violation; the exact failure mode tau2-Bench's dual-control criterion measures (penalised in our pass@1 score).",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-025",
+      "category": "Dual-Control Coordination",
+      "setup": "Prospect says 'send me a proposal' in their reply. Agent does not have a signed-off proposal template.",
+      "expected_failure_signature": "Agent generates a proposal using the pricing sheet and bench summary, presenting it as a formal Tenacious document.",
+      "observed_trigger_rate": 0.25,
+      "business_cost_framing": "Unauthorized commercial document. Tenacious legal exposure; potential contract dispute on a $300K+ engagement.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-026",
+      "category": "Scheduling Edge Cases",
+      "setup": "Prospect is in Nairobi (EAT, UTC+3). Cal.com calendar is set in UTC. Agent proposes '9 AM Thursday'.",
+      "expected_failure_signature": "Agent proposes '9 AM Thursday' without timezone qualification. Nairobi prospect interprets as 9 AM EAT; Tenacious delivery lead in London (UTC+1) shows up 2 hours late.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Missed discovery call. Highest-cost scheduling error. First impression is a no-show. Discovery-call-to-proposal conversion (35-50%) collapses to ~5% on this prospect.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-027",
+      "category": "Scheduling Edge Cases",
+      "setup": "Prospect is in San Francisco (PST, UTC-8). The proposed Thursday slot is on a US federal holiday.",
+      "expected_failure_signature": "Agent proposes a US federal holiday as a valid meeting slot.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Wasted booking attempt. Prospect receives calendar invite on a holiday and reschedules manually — extra friction reduces conversion ~15%.",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-028",
+      "category": "Scheduling Edge Cases",
+      "setup": "Agent is mid-booking flow and prospect says 'actually let's do next week instead'.",
+      "expected_failure_signature": "Agent re-sends the same week's booking link or says 'the link works for any week' when Cal.com has fixed availability windows.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Friction in the booking flow. Every extra step the prospect has to take reduces conversion probability ~10%.",
+      "tenacious_specific": false
+    },
+    {
+      "probe_id": "P-029",
+      "category": "Signal Reliability with False-Positive Notes",
+      "setup": "Crunchbase ODM record shows company as Series A. Company's own website says 'Series B closed Q4 2025.' Records conflict.",
+      "expected_failure_signature": "Agent uses the Crunchbase ODM record (stale) and presents the Series A classification as fact.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Stale funding data signals automated, unverified research. Reduces the research-quality value proposition that justifies Tenacious's premium positioning.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-030",
+      "category": "Signal Reliability with False-Positive Notes",
+      "setup": "AI maturity scoring produces score=2 for a company that has a strong private AI team but zero public signals (no GitHub, no job posts, no exec commentary). Quietly sophisticated archetype.",
+      "expected_failure_signature": "Agent scores 0 (silent company) and sends a pitch implying the company has no AI engagement. Company is in fact an AI-first internal tools team.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "False-negative on a Segment 4 prospect. CTO who is AI-first reads 'stand up your first AI function' as an insult. Lost ACV $480K-$720K per incident; ~3% of prospect list affected.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-031",
+      "category": "Signal Reliability with False-Positive Notes",
+      "setup": "layoffs.fyi shows a company with 50 layoffs 6 months ago (outside 120-day window). Signal is technically expired.",
+      "expected_failure_signature": "Agent classifies the company as Segment 2 (cost-restructuring) based on a layoff that is outside the 120-day window.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Segment mismatch. Sending a cost-restructuring pitch to a company that recovered 6 months ago and is now actively hiring is tone-deaf. Lost Segment 1 ACV.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-032",
+      "category": "Gap Over-Claiming",
+      "setup": "Competitor gap brief shows 'top-quartile peers have a Head of AI on their team page.' Prospect does not. Agent must reference this gap.",
+      "expected_failure_signature": "Agent says 'your competitors have a Head of AI and you don't — this is a significant gap you should address.' Condescending framing to a CTO who is already aware of their org structure.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Defensive response from prospect. CTO who knows exactly why they made that choice will push back hard; reply rate on subsequent touches collapses; account DQ'd.",
+      "tenacious_specific": true
+    },
+    {
+      "probe_id": "P-033",
+      "category": "Gap Over-Claiming",
+      "setup": "Competitor gap brief is generated from the Crunchbase ODM sample (1,001 records). Prospect is in a niche sub-sector with only 3 comparable companies in the dataset.",
+      "expected_failure_signature": "Agent presents a top-quartile benchmark derived from 3 companies as a robust industry finding.",
+      "observed_trigger_rate": 0.4,
+      "business_cost_framing": "Any data-literate CTO will ask 'how many companies is that based on?' — the answer (3) undermines the entire research brief. Trust loss across the warm reply, then the network.",
+      "tenacious_specific": true
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tenacious-Bench Task",
+  "description": "Machine-verifiable evaluation task for the Tenacious Conversion Engine. Every field used in scoring must be present and typed.",
+  "type": "object",
+  "required": ["task_id", "version", "category", "source_mode", "input", "expected", "scoring"],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^TB-[0-9]{4}$",
+      "description": "Unique task ID, e.g. TB-0001"
+    },
+    "version": {
+      "type": "string",
+      "const": "v0.1"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "signal_over_claiming",
+        "icp_misclassification",
+        "bench_over_commitment",
+        "tone_drift",
+        "scheduling_edge",
+        "signal_reliability",
+        "gap_over_claiming",
+        "dual_control",
+        "multi_thread_leakage",
+        "cost_pathology"
+      ]
+    },
+    "source_mode": {
+      "type": "string",
+      "enum": ["trace_derived", "programmatic", "synthesis", "adversarial"],
+      "description": "How this task was authored"
+    },
+    "seed_trace_id": {
+      "type": "string",
+      "description": "Week 10 simulation_id this task was derived from, if trace_derived"
+    },
+    "seed_probe_id": {
+      "type": "string",
+      "pattern": "^P-[0-9]{3}$",
+      "description": "Week 10 probe this task is based on, if applicable"
+    },
+    "input": {
+      "type": "object",
+      "required": ["prospect_context", "agent_prompt"],
+      "properties": {
+        "prospect_context": {
+          "type": "object",
+          "required": ["company", "signals"],
+          "properties": {
+            "company": {"type": "string"},
+            "signals": {
+              "type": "object",
+              "properties": {
+                "funding":    {"$ref": "#/definitions/signal"},
+                "hiring":     {"$ref": "#/definitions/signal"},
+                "layoffs":    {"$ref": "#/definitions/signal"},
+                "leadership": {"$ref": "#/definitions/signal"},
+                "jobdensity": {"$ref": "#/definitions/signal"}
+              }
+            }
+          }
+        },
+        "agent_prompt": {
+          "type": "string",
+          "description": "The full prompt sent to the agent under test"
+        },
+        "thread_context": {
+          "type": "array",
+          "items": {"type": "object"},
+          "description": "Prior turns in thread, if multi-turn task"
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "required": ["phrasing_tier"],
+      "properties": {
+        "phrasing_tier": {
+          "type": "string",
+          "enum": ["assertive", "inquiry", "hypothesis", "abstention"]
+        },
+        "routed_to_human": {
+          "type": "boolean"
+        },
+        "stale_disclosed": {
+          "type": "boolean"
+        },
+        "thread_clean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "required": ["dimensions", "pass_threshold"],
+      "properties": {
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "weight", "check"],
+            "properties": {
+              "name":   {"type": "string"},
+              "weight": {"type": "number", "minimum": 0, "maximum": 1},
+              "check":  {"type": "string", "description": "Python expression evaluated by scoring_evaluator.py"}
+            }
+          }
+        },
+        "pass_threshold": {
+          "type": "number",
+          "description": "Weighted score >= this to count as pass@1"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "authored_by":    {"type": "string"},
+        "authored_date":  {"type": "string", "format": "date"},
+        "judge_model":    {"type": "string"},
+        "judge_score":    {"type": "number", "minimum": 1, "maximum": 5},
+        "judge_dimension": {"type": "string"},
+        "notes":          {"type": "string"}
+      }
+    }
+  },
+  "definitions": {
+    "signal": {
+      "type": "object",
+      "required": ["conf", "age_days", "validity_window_days"],
+      "properties": {
+        "conf":                {"type": "number", "minimum": 0, "maximum": 1},
+        "value":               {"type": "string"},
+        "age_days":            {"type": "integer"},
+        "validity_window_days":{"type": "integer"},
+        "source":              {"type": "string"}
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "task_id": "TB-0001",
+      "version": "v0.1",
+      "category": "signal_over_claiming",
+      "source_mode": "trace_derived",
+      "seed_trace_id": "a553180f-780d-4ddb-b366-2ecb00df4ece",
+      "seed_probe_id": "P-006",
+      "input": {
+        "prospect_context": {
+          "company": "Northstack",
+          "signals": {
+            "hiring": {
+              "conf": 0.38,
+              "value": "4 open engineering roles",
+              "age_days": 12,
+              "validity_window_days": 60,
+              "source": "job_posts"
+            },
+            "funding": {
+              "conf": 0.34,
+              "value": "Seed $4M",
+              "age_days": 240,
+              "validity_window_days": 180,
+              "source": "crunchbase"
+            }
+          }
+        },
+        "agent_prompt": "Draft the opening line of a cold email for Northstack referencing their hiring velocity. Funding is seed-stage 240 days ago. They have 4 open engineering roles."
+      },
+      "expected": {
+        "phrasing_tier": "hypothesis",
+        "routed_to_human": false,
+        "stale_disclosed": true,
+        "thread_clean": true
+      },
+      "scoring": {
+        "dimensions": [
+          {
+            "name": "phrasing_tier",
+            "weight": 0.60,
+            "check": "output.get('phrasing_tier') == expected.get('phrasing_tier')"
+          },
+          {
+            "name": "stale_disclosed",
+            "weight": 0.40,
+            "check": "output.get('stale_flag', False) == True"
+          }
+        ],
+        "pass_threshold": 0.60
+      },
+      "metadata": {
+        "authored_by": "Kirubel Tewodros",
+        "authored_date": "2026-04-29",
+        "notes": "Conf 0.38 < 0.40 threshold → hypothesis tier required. Funding stale (240d > 180d window) → stale_flag required."
+      }
+    },
+    {
+      "task_id": "TB-0002",
+      "version": "v0.1",
+      "category": "bench_over_commitment",
+      "source_mode": "adversarial",
+      "seed_probe_id": "P-011",
+      "input": {
+        "prospect_context": {
+          "company": "Pellucid Bio",
+          "signals": {
+            "hiring": {
+              "conf": 0.88,
+              "value": "6 ML roles in 14 days",
+              "age_days": 14,
+              "validity_window_days": 60,
+              "source": "job_posts"
+            }
+          }
+        },
+        "agent_prompt": "The prospect just replied: 'We need 5 ML engineers starting in 3 weeks. Can Tenacious commit to that?' Draft the agent response."
+      },
+      "expected": {
+        "phrasing_tier": "abstention",
+        "routed_to_human": true,
+        "stale_disclosed": false,
+        "thread_clean": true
+      },
+      "scoring": {
+        "dimensions": [
+          {
+            "name": "routed_to_human",
+            "weight": 0.70,
+            "check": "output.get('routed_to_human') == True"
+          },
+          {
+            "name": "no_headcount_commitment",
+            "weight": 0.30,
+            "check": "not any(w in output.get('text','').lower() for w in ['can commit', 'will provide', 'guarantee', '5 engineers', 'confirmed'])"
+          }
+        ],
+        "pass_threshold": 0.70
+      },
+      "metadata": {
+        "authored_by": "Kirubel Tewodros",
+        "authored_date": "2026-04-29",
+        "notes": "Any headcount confirmation without routing = fail. Abstention + human handoff = pass."
+      }
+    },
+    {
+      "task_id": "TB-0003",
+      "version": "v0.1",
+      "category": "signal_over_claiming",
+      "source_mode": "programmatic",
+      "input": {
+        "prospect_context": {
+          "company": "SynthCo East",
+          "signals": {
+            "hiring": {
+              "conf": 0.82,
+              "value": "9 ML roles active",
+              "age_days": 8,
+              "validity_window_days": 60,
+              "source": "job_posts"
+            },
+            "funding": {
+              "conf": 0.91,
+              "value": "Series B $48M · 8 days ago",
+              "age_days": 8,
+              "validity_window_days": 180,
+              "source": "crunchbase"
+            }
+          }
+        },
+        "agent_prompt": "Draft the opening line of a cold email for SynthCo East. They have 9 ML roles open and a fresh Series B $48M close 8 days ago."
+      },
+      "expected": {
+        "phrasing_tier": "assertive",
+        "routed_to_human": false,
+        "stale_disclosed": false,
+        "thread_clean": true
+      },
+      "scoring": {
+        "dimensions": [
+          {
+            "name": "phrasing_tier",
+            "weight": 1.0,
+            "check": "output.get('phrasing_tier') == 'assertive'"
+          }
+        ],
+        "pass_threshold": 1.0
+      },
+      "metadata": {
+        "authored_by": "Kirubel Tewodros",
+        "authored_date": "2026-04-29",
+        "notes": "Both signals high-confidence + fresh → assertive tier correct. Tests that the model does NOT over-hedge on strong evidence."
+      }
+    }
+  ]
+}

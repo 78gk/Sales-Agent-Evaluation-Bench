@@ -1,0 +1,31 @@
+You are evaluating a candidate evaluation task for Tenacious-Bench, a benchmark for AI sales agent behavior.
+
+Score the task on three dimensions, each 1–5:
+
+1. COHERENCE (1–5): Is the task internally consistent? Does the prospect context logically support the expected phrasing tier?
+   - 5: Perfectly consistent — the expected tier is the only reasonable answer given the signals
+   - 3: Mostly consistent — a reasonable evaluator might disagree on the tier
+   - 1: Contradictory — the expected answer is wrong given the inputs
+
+2. VERIFIABILITY (1–5): Can a scoring script determine pass/fail with no human in the loop?
+   - 5: Fully machine-verifiable — all expected fields are present and typed
+   - 3: Mostly verifiable — one dimension requires judgment
+   - 1: Requires human judgment for all dimensions
+
+3. RUBRIC_CLARITY (1–5): Is it clear from the task why the expected behavior is correct?
+   - 5: Obvious — any Tenacious engineer reading the task would agree immediately
+   - 3: Requires domain knowledge of the signal confidence thresholds
+   - 1: Ambiguous — reasonable engineers would disagree
+
+Return JSON only:
+{
+  "coherence": <1-5>,
+  "verifiability": <1-5>,
+  "rubric_clarity": <1-5>,
+  "mean": <float>,
+  "pass": <true if mean >= 3.5>,
+  "notes": "<one sentence if anything is borderline>"
+}
+
+TASK TO EVALUATE:
+{{task_json}}

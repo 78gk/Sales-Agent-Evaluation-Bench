@@ -1,0 +1,72 @@
+{
+  "_note": "Maps every numeric claim in memo.pdf and the blog post to its source. Populated incrementally — each claim added as it appears in a deliverable.",
+  "_schema": {
+    "claim_id": "Unique ID for the claim, format: C-NNN",
+    "claim_text": "The exact numeric claim as it appears in the deliverable",
+    "source_type": "trace | task | ablation_row | probe | public_source | cost_log",
+    "source_id": "trace simulation_id, task_id TB-NNNN, ablation row key, probe ID P-NNN, or URL",
+    "value": "The number itself",
+    "verified": "true when source has been checked against the artifact"
+  },
+  "claims": [
+    {
+      "claim_id": "C-001",
+      "claim_text": "τ²-Bench pass@1 = 0.8333",
+      "source_type": "trace",
+      "source_id": "seeds/trace_log.jsonl — 25 reward=1.0 out of 30 trials",
+      "value": 0.8333,
+      "verified": true
+    },
+    {
+      "claim_id": "C-002",
+      "claim_text": "Signal Over-Claiming trigger rate = 0.55",
+      "source_type": "probe",
+      "source_id": "P-006, P-007, P-008, P-009, P-010 — seeds/failure_taxonomy.md",
+      "value": 0.55,
+      "verified": true
+    },
+    {
+      "claim_id": "C-003",
+      "claim_text": "Bench Over-Commitment trigger rate = 0.40, pass@1 = 0.40",
+      "source_type": "probe",
+      "source_id": "P-011 — seeds/probe_library.md",
+      "value": 0.40,
+      "verified": true
+    },
+    {
+      "claim_id": "C-004",
+      "claim_text": "Signal Over-Claiming annual pipeline cost ~$2.40M per 1,000 touches",
+      "source_type": "public_source",
+      "source_id": "seeds/target_failure_mode.md — unit economics table",
+      "value": 2400000,
+      "verified": true
+    },
+    {
+      "claim_id": "C-005",
+      "claim_text": "Week 10 cost per qualified lead = $0.52",
+      "source_type": "trace",
+      "source_id": "seeds/trace_log.jsonl — mean agent_cost across 30 trials",
+      "value": 0.52,
+      "verified": false,
+      "_note": "Verify by computing mean(agent_cost) from trace_log.jsonl"
+    },
+    {
+      "claim_id": "C-006",
+      "claim_text": "Delta A — trained vs baseline on held_out",
+      "source_type": "ablation_row",
+      "source_id": "ablations/ablation_results.json — delta_a",
+      "value": null,
+      "verified": false,
+      "_note": "Populated after training run"
+    },
+    {
+      "claim_id": "C-007",
+      "claim_text": "Delta B — trained vs prompt-engineered on held_out",
+      "source_type": "ablation_row",
+      "source_id": "ablations/ablation_results.json — delta_b",
+      "value": null,
+      "verified": false,
+      "_note": "Populated after training run"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "_note": "Populated after training run (Days 4-5). Each delta requires p<0.05 paired bootstrap (Delta A). Delta B negative result is acceptable and publishable.",
+  "seed": 42,
+  "held_out_size": null,
+  "delta_a": {
+    "description": "Trained LoRA (Qwen 3.5) vs Week 10 baseline agent on Tenacious-Bench held_out",
+    "baseline_pass_at_1": null,
+    "trained_pass_at_1": null,
+    "delta": null,
+    "p_value": null,
+    "ci_95_lower": null,
+    "ci_95_upper": null,
+    "bootstrap_n": 1000,
+    "status": "pending"
+  },
+  "delta_b": {
+    "description": "Trained LoRA vs prompt-engineered version (same Qwen 3.5 backbone, no training) on held_out",
+    "prompt_engineered_pass_at_1": null,
+    "trained_pass_at_1": null,
+    "delta": null,
+    "status": "pending",
+    "note": "Negative result is acceptable and publishable — report honestly"
+  },
+  "delta_c": {
+    "description": "Trained LoRA vs Week 10 tau2-Bench pass@1=0.8333 — informational only",
+    "tau2_bench_baseline": 0.8333,
+    "trained_tau2_score": null,
+    "status": "pending",
+    "note": "No tau2-Bench retail re-runs. Use existing trace_log.jsonl result."
+  },
+  "per_category_breakdown": {
+    "signal_over_claiming": null,
+    "bench_over_commitment": null,
+    "icp_misclassification": null,
+    "tone_drift": null,
+    "other": null
+  }
+}

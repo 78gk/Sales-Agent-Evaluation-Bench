@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.env.*
+*.key
+
+# Held-out partition — NEVER commit to training scripts or public repo unencrypted
+# Released only after leaderboard publication + program staff sign-off
+tenacious_bench_v0.1/held_out/
+ablations/held_out_traces.jsonl
+
+# Training artifacts (large files — push to HF Hub instead)
+training/*.bin
+training/*.safetensors
+training/*.pt
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
