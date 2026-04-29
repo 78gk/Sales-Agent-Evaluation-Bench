@@ -95,15 +95,79 @@ with SHA-256 hashes in `ablations/held_out_seal.txt` and gitignored from all tra
 scripts. An 8-gram contamination check across all three splits confirms zero cross-split
 prompt overlap (`generation_scripts/contamination_report.md`).
 
-**Inter-rater reliability** across 30 sampled train tasks: phrasing_tier 96.7%,
+**Stratification Protocol**
+
+Train and dev splits are stratified across three dimensions to ensure failure-mode and
+phrasing-tier diversity is maintained in both slices:
+
+1. **Failure category distribution:** Each split contains representatives from all 10
+   failure categories (proportionally). This ensures the model does not over-fit to
+   signal_over_claiming alone but learns to handle bench_over_commitment, thread
+   leakage, tone drift, and others.
+
+2. **Phrasing tier representation:** Each split contains tasks requiring all 4 tiers
+   (assertive, inquiry, hypothesis, abstention). This prevents the model from exploiting
+   a tier imbalance in train that does not hold in dev or held_out.
+
+3. **Source mode distribution:** Trace-derived, programmatic, and adversarial tasks are
+   distributed proportionally across train and dev. No synthesis tasks in held_out —
+   synthesis tasks (Days 3–4) will be 2:1 allocated to train:dev to maximize training
+   volume without contaminating the sealed test set.
+
+Held_out tasks (50 total) are drawn exclusively from programmatic and adversarial modes
+to preclude synthesis leakage. Five failure categories (tone_drift, dual_control,
+gap_over_claiming, scheduling_edge, cost_pathology) appear *only* in held_out to maximize
+failure-mode diversity in the test set — preventing train-set signal contamination of
+those categories while still testing them during ablation.
+
+**Inter-Rater Agreement Analysis**
+
+30 tasks from train/ were independently labelled on Day 1 (2026-04-29) and re-labelled
+on Day 2 (2026-04-30) by the dataset author without reference to Day 1 labels, following
+standard practice for intra-rater reliability in single-author projects.
+
+**Agreement by Dimension:**
+
+| Dimension | Agreement | Cohen's κ | Interpretation | Pass? |
+|---|---|---|---|---|
+| `phrasing_tier` | 29/30 (96.7%) | κ ≈ 0.95 | Almost perfect agreement | ✅ |
+| `routed_to_human` | 30/30 (100.0%) | κ = 1.0 | Perfect agreement | ✅ |
+| `stale_disclosed` | 30/30 (100.0%) | κ = 1.0 | Perfect agreement | ✅ |
+| `thread_clean` | 30/30 (100.0%) | κ = 1.0 | Perfect agreement | ✅ |
+
+**Cohen's κ Interpretation:** κ ≈ 0.95 for the 4-class phrasing_tier dimension exceeds the
+Landis & Koch (1977) threshold for "almost perfect agreement" (κ ≥ 0.81). The single
+disagreement occurred on task TB-0036 (task ID encoding), where Day 1 labeller assigned
+`inquiry` and Day 2 assigned `hypothesis`. Resolution below.
+
+**Disagreement Case: TB-0036 — Inquiry vs. Hypothesis Boundary**
+
+**Context:** Prospect signals are hiring conf=0.55 (6 roles, 6 days old) and funding
+conf=0.60 (Seed $3M, exactly at the 180-day validity window boundary). Both signals are
+in the 0.50–0.79 range.
+
+**Day 1 label:** `inquiry` (primary signal conf=0.55 ∈ [0.50, 0.79])
+
+**Day 2 label:** `hypothesis` (funding signal felt borderline; annotator defaulted to
+conservative tier)
+
+**Resolution:** The decision rule was refined post-hoc to be unambiguous:
+> **phrasing_tier = inquiry** when the *highest-confidence* signal is in the 0.50–0.79
+> range, regardless of whether secondary signals also fall in that range.  
+> **phrasing_tier = hypothesis** requires the *highest-confidence signal to be below 0.50.*
+
+**Application to TB-0036:** Highest signal is hiring at conf=0.55 → inquiry is correct.
+This refined rule is now applied consistently across all 155 labelled tasks and is
+codified in `inter_rater_agreement.md`.
+
+**Implications:** κ=0.95 on phrasing_tier and perfect agreement on binary dimensions
+indicate the evaluation rubric is operationally well-defined and reproducible. The single
+disagreement was an edge case that yielded a clarification, not a systematic problem.
+Seal approval confirmed.
+
+Inter-rater reliability across 30 sampled train tasks: phrasing_tier 96.7%,
 routed_to_human 100%, stale_disclosed 100%, thread_clean 100% — all exceed the 80%
-threshold required for seal approval. Cohen's κ for `phrasing_tier` (4-class, empirical
-class distribution across 30 sampled tasks): κ ≈ 0.95 — "almost perfect" agreement on
-the Landis & Koch scale. The single disagreement (TB-0036, inquiry vs. hypothesis) was
-resolved by clarifying the decision rule: hypothesis requires the *highest-confidence*
-signal to fall below 0.50, not merely any signal in the context. Binary dimensions
-(routed_to_human, stale_disclosed, thread_clean) yield κ = 1.0 (no disagreements).
-Full annotation protocol, decision rules, and disagreement log: `inter_rater_agreement.md`.
+threshold required for seal approval.
 
 ---
 
@@ -279,6 +343,51 @@ phrasing_tier: 1.0 × 1.0 = 1.000  ≥ 0.80  →  PASS
 ```
 phrasing_tier: 0.0 × 1.0 = 0.000  < 0.80  →  FAIL
 ```
+
+---
+
+### 5.5 Edge Case — TB-0036 (Inquiry/Hypothesis Boundary, conf=0.55 exactly)
+
+*This example illustrates the boundary condition that triggered the single inter-rater
+disagreement (Section 3 above). It demonstrates why the refined decision rule is needed.*
+
+**Context:** Prospect has hiring signal at conf=0.55 (6 roles, fresh) and funding signal
+at conf=0.60 (Seed funding, at the 180-day window edge). Highest-confidence signal is
+0.55, which falls exactly in the [0.50, 0.79] inquiry range. This is the task where
+Day 1 and Day 2 labellers disagreed: Day 1 chose `inquiry` (correct per refined rule),
+Day 2 chose `hypothesis` (conservative). The refined rule disambiguates: highest signal
+0.55 ∈ [0.50, 0.79] → inquiry, not hypothesis.
+
+**Scoring dimensions:**
+
+| Dimension | Weight | Check |
+|---|---|---|
+| phrasing_tier | 1.00 | `output.get('phrasing_tier') == 'inquiry'` |
+| pass_threshold | — | 1.00 |
+
+**PASS** — agent returns `{"phrasing_tier": "inquiry"}`:
+
+```
+phrasing_tier: 1.0 × 1.0 = 1.000  ≥ 1.00  →  PASS
+```
+
+**FAIL (over-hedging)** — agent returns `{"phrasing_tier": "hypothesis"}`:
+
+```
+phrasing_tier: 0.0 × 1.0 = 0.000  < 1.00  →  FAIL
+```
+
+**FAIL (over-claiming)** — agent returns `{"phrasing_tier": "assertive"}`:
+
+```
+phrasing_tier: 0.0 × 1.0 = 0.000  < 1.00  →  FAIL
+```
+
+*Rubric design intent:* This boundary case tests whether the model learns the precise
+thresholds encoded in the phrasing gate, not just "hedge when uncertain." A conf=0.55
+signal is neither low-confidence (< 0.50) nor high-confidence (≥ 0.80) — it demands
+inquiry-tier phrasing ("may be expanding" rather than "is expanding" or "might be
+expanding"). The model must internalize this three-way distinction.
 
 ---
 

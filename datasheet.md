@@ -23,13 +23,34 @@ No external funding. LLM API costs capped at $10 (see cost_log.md).
 Each instance is an evaluation task: a prospect context (company signals with confidence scores and age), an agent prompt, expected output fields (phrasing_tier, routed_to_human, stale_disclosed, thread_clean), and a machine-verifiable scoring rubric.
 
 **How many instances?**  
-Target: 250 tasks. Split: 125 train / 75 dev / 50 held_out (sealed).
+Current submission: 155 tasks (Day 3 interim). Full target: 250 tasks (reaches 250 by Day 4 after synthesis generation).
+Current split: 75 train / 30 dev / 50 held_out (sealed).
+Target split (final): 125 train / 75 dev / 50 held_out (synthesis tasks added Days 3–4 via `synthesis_generator.py`).
 
-**Authoring mode distribution:**  
-- trace_derived: ~30% (derived from Week 10 τ²-Bench run traces)
-- programmatic: ~30% (confidence × signal type parameter sweeps)
-- synthesis: ~25% (multi-LLM generated, cross-model judged)
-- adversarial: ~15% (hand-authored edge cases)
+**Authoring mode distribution (INTERIM 155-task submission):**  
+
+| Mode | Current Count | Current % | Target % (250 full) | Notes |
+|---|---|---|---|---|
+| adversarial | 83 | 53.5% | 15% | Overweight in interim; hand-authored high-risk cases |
+| programmatic | 38 | 24.5% | 30% | Parameter sweeps; will increase with Day 4 additions |
+| trace_derived | 34 | 22% | 30% | Derived from seeds/trace_log.jsonl |
+| synthesis | 0 | 0% | 25% | Generated Days 3–4; synthesis_generator.py produces 60 tasks |
+
+**Final distribution (target 250):**  
+- trace-derived: ~75 tasks (~30%)
+- programmatic: ~75 tasks (~30%)
+- synthesis: ~60 tasks (~25%)
+- adversarial: ~40 tasks (~15%)
+
+**Per-Authoring-Mode Descriptions:**
+
+*Trace-derived tasks* are adapted from specific Week 10 τ²-Bench simulation runs in `seeds/trace_log.jsonl`. Each task maps one failed or passed trial to a Tenacious-Bench evaluation task, preserving the signal context and agent challenge but reframing the evaluation around phrasing-tier correctness. Example: Trace sim_a553180f (Week 10 task 11, reward=0.0) becomes Tenacious-Bench TB-0011: given a company with hiring_confidence=0.38, the task requires the agent to use hypothesis-tier phrasing (not assertive), demonstrating signal-respect rather than task-completion accuracy.
+
+*Programmatic tasks* are generated via parameter sweeps: for each combination of (signal_type ∈ {funding, hiring, layoffs, leadership}, confidence ∈ {0.1, 0.3, 0.5, 0.7, 0.9}, evidence_count ∈ {1, 2, 3}), a task template is instantiated with randomized company names and prospect contexts. These tasks are deterministic and reproducible. Example: (signal_type=hiring, confidence=0.45, evidence_count=2) generates a task where the agent sees one hiring signal and one funding signal, both at 0.45 confidence — testing the inquiry vs. hypothesis tier boundary.
+
+*Synthesis tasks* are generated on-the-fly via multi-LLM synthesis: Qwen3-80B generates candidate tasks given a failure category and schema constraints; DeepSeek V3.2 (separate model) evaluates the candidate on three dimensions (coherence, verifiability, rubric_clarity) using `generation_scripts/judge_prompt.txt`; tasks above threshold are deduped and committed. These tasks exhibit higher diversity and more natural language variation than programmatic tasks. Example: a synthesis task might describe a prospect with conflicting signals (positive hiring trend but recent layoff announcement, 3 days old) requiring the agent to reconcile and express appropriate uncertainty.
+
+*Adversarial tasks* are hand-authored against specific probes from `seeds/probe_library.json` to stress-test edge cases: near-threshold confidence values (0.49 vs. 0.51, crossing the inquiry/hypothesis boundary), stale-signal mixtures (two signals valid, one expired), cross-thread entity mentions, and capacity-commitment requests that should trigger abstention. These are authored by the dataset creator (Kirubel Tewodros) with full domain knowledge and represent the most challenging evaluation scenarios.
 
 **Failure category distribution (target):**  
 
