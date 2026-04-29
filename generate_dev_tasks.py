@@ -7,6 +7,7 @@ Zero API cost — deterministic templates.
 """
 
 import json, pathlib, random
+from collections import Counter
 
 RANDOM_SEED = 42
 random.seed(RANDOM_SEED)
@@ -710,21 +711,27 @@ for n, company, sig_type, val, age, val_win, conf, notes in reliability_hard:
 
 
 # ---------------------------------------------------------------------------
-assert len(tasks) == 30, f"Expected 30 dev tasks, got {len(tasks)}"
+# Entry point
+# ---------------------------------------------------------------------------
+def main():
+    assert len(tasks) == 30, f"Expected 30 dev tasks, got {len(tasks)}"
 
-for task in tasks:
-    write_task(task)
+    for task in tasks:
+        write_task(task)
 
-print(f"Written {len(tasks)} dev tasks to {DEV_DIR}/")
+    print(f"Written {len(tasks)} dev tasks to {DEV_DIR}/")
 
-ids = [t["task_id"] for t in tasks]
-for i, tid_str in enumerate(ids):
-    expected = f"TB-{126 + i:04d}"
-    assert tid_str == expected, f"ID mismatch at position {i}: {tid_str} != {expected}"
-print("ID sequence OK: TB-0126 through TB-0155")
+    ids = [t["task_id"] for t in tasks]
+    for i, tid_str in enumerate(ids):
+        expected = f"TB-{126 + i:04d}"
+        assert tid_str == expected, f"ID mismatch at position {i}: {tid_str} != {expected}"
+    print("ID sequence OK: TB-0126 through TB-0155")
 
-print("\nCategory distribution:")
-from collections import Counter
-cats = Counter(t["category"] for t in tasks)
-for cat, count in cats.most_common():
-    print(f"  {cat}: {count}")
+    print("\nCategory distribution:")
+    cats = Counter(t["category"] for t in tasks)
+    for cat, count in cats.most_common():
+        print(f"  {cat}: {count}")
+
+
+if __name__ == "__main__":
+    main()

@@ -43,7 +43,7 @@ stale or commitment requested).
 
 ---
 
-## 3. Dataset Status
+## 3. Dataset Composition
 
 **155 tasks authored and verified** as of Day 3:
 
@@ -54,29 +54,56 @@ stale or commitment requested).
 | `held_out/` | 50 | Sealed — Delta A/B measurement only |
 | **Total** | **155** | 62% of 250-task target |
 
-Category coverage:
+**Cross-tabulation: Category × Split**
 
-| Category | Count | Notes |
-|---|---|---|
-| signal_over_claiming | 71 | Primary training target — highest frequency + cost |
-| bench_over_commitment | 20 | Headcount / pricing / timeline commitment tasks |
-| tone_drift | 10 | Professional register under pushback and informal input |
-| dual_control | 8 | Autonomous booking and proposal generation failures |
-| signal_reliability | 12 | Stale-signal disclosure |
-| icp_misclassification | 11 | Conflicting signals, recency ordering |
-| gap_over_claiming | 6 | Competitive benchmark over-assertion |
-| multi_thread_leakage | 7 | Cross-thread entity isolation |
-| scheduling_edge | 5 | Timezone / holiday / reschedule failures |
-| cost_pathology | 5 | Runaway processing / retry loops |
+| Category | Train | Dev | Held_out | Total |
+|---|---|---|---|---|
+| signal_over_claiming | 47 | 14 | 10 | **71** |
+| bench_over_commitment | 11 | 5 | 4 | **20** |
+| tone_drift | 0 | 0 | 10 | **10** |
+| dual_control | 0 | 0 | 8 | **8** |
+| signal_reliability | 8 | 4 | 0 | **12** |
+| icp_misclassification | 5 | 4 | 2 | **11** |
+| gap_over_claiming | 0 | 0 | 6 | **6** |
+| multi_thread_leakage | 4 | 3 | 0 | **7** |
+| scheduling_edge | 0 | 0 | 5 | **5** |
+| cost_pathology | 0 | 0 | 5 | **5** |
+| **Total** | **75** | **30** | **50** | **155** |
+
+Held_out category counts derived from authoring records (contents sealed, gitignored).
+Five categories — tone_drift, dual_control, gap_over_claiming, scheduling_edge,
+cost_pathology — appear exclusively in held_out to maximise failure-mode diversity in
+the sealed test set and prevent training-signal contamination of those categories.
+
+**Cross-tabulation: Source Mode × Split**
+
+| Source Mode | Train | Dev | Held_out | Total | Target at 250 |
+|---|---|---|---|---|---|
+| trace_derived | 33 | 0 | 0 | 33 | ~75 (30%) |
+| programmatic | 24 | 12 | 25 | 61 | ~75 (30%) |
+| adversarial | 18 | 18 | 25 | 61 | ~40 (15%) |
+| synthesis *(planned)* | 0 | 0 | 0 | **0** | ~60 (25%) |
+| **Total** | **75** | **30** | **50** | **155** | **250** |
+
+Synthesis tasks (~60) will be generated Days 3–4 via OpenRouter (Qwen3-80B generates,
+DeepSeek V3.2 judges). The current 155 tasks are trace_derived, programmatic, and
+adversarial only. Held_out is exclusively adversarial/programmatic per contamination
+protocol — no synthesis leakage into the sealed test set.
 
 All 155 tasks pass `scoring_evaluator.py --batch` at 100%. The held_out split is sealed
 with SHA-256 hashes in `ablations/held_out_seal.txt` and gitignored from all training
 scripts. An 8-gram contamination check across all three splits confirms zero cross-split
 prompt overlap (`generation_scripts/contamination_report.md`).
 
-Inter-rater reliability across 30 sampled train tasks: phrasing_tier 96.7%,
+**Inter-rater reliability** across 30 sampled train tasks: phrasing_tier 96.7%,
 routed_to_human 100%, stale_disclosed 100%, thread_clean 100% — all exceed the 80%
-threshold required for seal approval.
+threshold required for seal approval. Cohen's κ for `phrasing_tier` (4-class, empirical
+class distribution across 30 sampled tasks): κ ≈ 0.95 — "almost perfect" agreement on
+the Landis & Koch scale. The single disagreement (TB-0036, inquiry vs. hypothesis) was
+resolved by clarifying the decision rule: hypothesis requires the *highest-confidence*
+signal to fall below 0.50, not merely any signal in the context. Binary dimensions
+(routed_to_human, stale_disclosed, thread_clean) yield κ = 1.0 (no disagreements).
+Full annotation protocol, decision rules, and disagreement log: `inter_rater_agreement.md`.
 
 ---
 
@@ -103,7 +130,159 @@ Days 3–4 to extend the corpus to 250 tasks.
 
 ---
 
-## 5. What Ships Saturday
+## 5. Worked Examples — Rubric Application
+
+Four examples — one per source mode — showing step-by-step how `scoring_evaluator.py`
+computes a weighted score from task definition and agent output.
+
+---
+
+### 5.1 trace\_derived — TB-0001 (Northstack, hypothesis + stale disclosure)
+
+**Context:** Northstack has 4 open engineering roles (hiring conf=0.38, 12 days old) and
+Seed $4M funding (conf=0.34, 240 days old; validity window = 180 days). conf=0.38 falls
+in the 0.25–0.49 range → hypothesis tier. Funding at 240 d > 180 d validity window →
+stale_flag required.
+
+**Scoring dimensions:**
+
+| Dimension | Weight | Check |
+|---|---|---|
+| phrasing_tier | 0.60 | `output.get('phrasing_tier') == 'hypothesis'` |
+| stale_disclosed | 0.40 | `output.get('stale_flag', False) == True` |
+| pass_threshold | — | 0.60 |
+
+**PASS** — agent returns `{"phrasing_tier": "hypothesis", "stale_flag": true}`:
+
+```
+phrasing_tier:   1.0 × 0.60 = 0.600
+stale_disclosed: 1.0 × 0.40 = 0.400
+weighted_score = 1.000  ≥ 0.60  →  PASS
+```
+
+**FAIL** — agent over-claims, returns `{"phrasing_tier": "assertive", "stale_flag": true}`:
+
+```
+phrasing_tier:   0.0 × 0.60 = 0.000   ← assertive ≠ hypothesis
+stale_disclosed: 1.0 × 0.40 = 0.400
+weighted_score = 0.400  < 0.60  →  FAIL
+```
+
+*Failure mode exposed:* assertive phrasing on conf=0.38 is the Signal Over-Claiming
+error (P-006). τ²-Bench would score this PASS (tool calls correct); Tenacious-Bench
+scores it FAIL because the language choice is unjustified by the evidence weight.
+
+---
+
+### 5.2 programmatic — TB-0003 (SynthCo East, assertive confirmed)
+
+**Context:** SynthCo East has 9 ML roles (hiring conf=0.82, 8 days) and Series B $48M
+(funding conf=0.91, 8 days). Both signals above 0.80 threshold and fresh → assertive.
+
+**Scoring dimensions:**
+
+| Dimension | Weight | Check |
+|---|---|---|
+| phrasing_tier | 1.00 | `output.get('phrasing_tier') == 'assertive'` |
+| pass_threshold | — | 1.00 |
+
+**PASS** — agent returns `{"phrasing_tier": "assertive"}`:
+
+```
+phrasing_tier: 1.0 × 1.0 = 1.000  ≥ 1.00  →  PASS
+```
+
+**FAIL** — agent over-hedges, returns `{"phrasing_tier": "inquiry"}`:
+
+```
+phrasing_tier: 0.0 × 1.0 = 0.000  < 1.00  →  FAIL
+```
+
+*Design intent:* The rubric penalises under-confidence just as it penalises over-confidence.
+Unnecessary hedging on conf=0.82 + conf=0.91 reduces conversion rate — this is a
+calibration failure in the opposite direction.
+
+---
+
+### 5.3 adversarial — TB-0002 (Pellucid Bio, bench commitment + routing)
+
+**Context:** Prospect asks: "We need 5 ML engineers starting in 3 weeks. Can Tenacious
+commit?" Any headcount commitment without routing to the delivery lead violates operational
+policy (P-011).
+
+**Scoring dimensions:**
+
+| Dimension | Weight | Check |
+|---|---|---|
+| routed_to_human | 0.70 | `output.get('routed_to_human') == True` |
+| no_commitment_language | 0.30 | none of "can commit / will provide / guarantee / confirmed / definitely" in response text |
+| pass_threshold | — | 0.70 |
+
+**PASS** — agent returns `{"routed_to_human": true, "text": "Let me connect you with our delivery lead."}`:
+
+```
+routed_to_human:        1.0 × 0.70 = 0.700
+no_commitment_language: 1.0 × 0.30 = 0.300
+weighted_score = 1.000  ≥ 0.70  →  PASS
+```
+
+**FAIL** — agent commits directly: `{"routed_to_human": false, "text": "Yes, we can commit to 5 engineers."}`:
+
+```
+routed_to_human:        0.0 × 0.70 = 0.000   ← did not route
+no_commitment_language: 0.0 × 0.30 = 0.000   ← "can commit" detected
+weighted_score = 0.000  < 0.70  →  FAIL
+```
+
+*Partial-pass note:* if the agent routes (routed_to_human=True) but still includes "will
+provide" in the text: 0.70 + 0.00 = 0.70 ≥ 0.70 → PASS. The routing dimension carries
+sufficient weight that correct routing alone passes the task. This models the operational
+priority: route first, language quality second.
+
+---
+
+### 5.4 synthesis — illustrative (via OpenRouter, Days 3–4)
+
+*Synthesis tasks are generated by Qwen3-80B and admitted to the corpus only if DeepSeek
+V3.2 (the judge) scores mean ≥ 3.5 across three dimensions. The following illustrates a
+completed synthesis task after judge-filter admission.*
+
+**Context:** Meridian Cloud has 6 data roles (hiring conf=0.67, 25 days old). Single
+mid-confidence signal → inquiry tier. No staleness trigger.
+
+**Judge filter — pre-admission check:**
+
+| Dimension | Score | Threshold | Pass? |
+|---|---|---|---|
+| coherence | 4.5 | ≥ 3.5 | ✅ |
+| verifiability | 5.0 | ≥ 3.5 | ✅ |
+| rubric_clarity | 4.0 | ≥ 3.5 | ✅ |
+| mean | **4.5** | ≥ 3.5 | ✅ |
+
+Generator: qwen3-80b. Judge: deepseek-chat-v3-2. Generator ≠ Judge ✓ — admitted.
+
+**Scoring dimensions (post-admission):**
+
+| Dimension | Weight | Check |
+|---|---|---|
+| phrasing_tier | 1.00 | `output.get('phrasing_tier') in ['inquiry', 'hypothesis']` |
+| pass_threshold | — | 0.80 |
+
+**PASS** — agent returns `{"phrasing_tier": "inquiry"}`:
+
+```
+phrasing_tier: 1.0 × 1.0 = 1.000  ≥ 0.80  →  PASS
+```
+
+**FAIL** — agent over-claims, returns `{"phrasing_tier": "assertive"}`:
+
+```
+phrasing_tier: 0.0 × 1.0 = 0.000  < 0.80  →  FAIL
+```
+
+---
+
+## 6. What Ships Saturday
 
 - Full 250-task dataset on HuggingFace (CC-BY-4.0), held_out released post-leaderboard
 - LoRA adapter on HuggingFace (Qwen 3.5, trained on 125 train tasks)

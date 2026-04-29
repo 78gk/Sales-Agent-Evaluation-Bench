@@ -10,6 +10,7 @@ Phrasing-tier decision logic mirrors CLAUDE.md thresholds:
 """
 
 import json, pathlib, random
+from collections import Counter
 
 RANDOM_SEED = 42  # pin for reproducibility across all generation scripts
 random.seed(RANDOM_SEED)
@@ -744,26 +745,28 @@ thread_tasks = [
 tasks.extend(thread_tasks)
 
 # ---------------------------------------------------------------------------
-# Write train tasks (TB-0001 to TB-0075)
 # ---------------------------------------------------------------------------
-assert len(tasks) == 75, f"Expected 75 train tasks, got {len(tasks)}"
-
-for task in tasks:
-    write_task(task, TRAIN_DIR)
-
-print(f"Written {len(tasks)} tasks to {TRAIN_DIR}/")
-
+# Entry point
 # ---------------------------------------------------------------------------
-# Verify task_ids are sequential
-# ---------------------------------------------------------------------------
-ids = [t["task_id"] for t in tasks]
-for i, tid_str in enumerate(ids, 1):
-    expected = f"TB-{i:04d}"
-    assert tid_str == expected, f"ID mismatch at position {i}: got {tid_str}"
+def main():
+    assert len(tasks) == 75, f"Expected 75 train tasks, got {len(tasks)}"
 
-print("ID sequence OK: TB-0001 through TB-0075")
-print("\nCategory distribution:")
-from collections import Counter
-cats = Counter(t["category"] for t in tasks)
-for cat, count in cats.most_common():
-    print(f"  {cat}: {count}")
+    for task in tasks:
+        write_task(task, TRAIN_DIR)
+
+    print(f"Written {len(tasks)} tasks to {TRAIN_DIR}/")
+
+    ids = [t["task_id"] for t in tasks]
+    for i, tid_str in enumerate(ids, 1):
+        expected = f"TB-{i:04d}"
+        assert tid_str == expected, f"ID mismatch at position {i}: got {tid_str}"
+
+    print("ID sequence OK: TB-0001 through TB-0075")
+    print("\nCategory distribution:")
+    cats = Counter(t["category"] for t in tasks)
+    for cat, count in cats.most_common():
+        print(f"  {cat}: {count}")
+
+
+if __name__ == "__main__":
+    main()
