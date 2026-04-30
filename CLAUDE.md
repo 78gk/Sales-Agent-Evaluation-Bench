@@ -27,22 +27,24 @@ Week 11 of 10 Academy TRP1. Build **Tenacious-Bench v0.1** — a custom evaluati
 
 ---
 
-## Current status (as of rubric-remediation commit 048e358, 2026-04-30)
+## Current status (as of Day 4 complete, 2026-04-30)
 
-**Interim report (memo.md/memo.pdf):** rubric-remediated. Cross-tab composition tables,
-4 worked examples with step-by-step rubric scoring, Cohen's κ IRA analysis all added.
+**Interim report (memo.md/memo.pdf):** Rubric-remediated and submitted.
 
-**Interim repo (GitHub):** rubric-remediated. Methodology.md has argued path justification
-(cause→inference→conclusion) and embedding similarity results. Generation pipeline has
-runnable synthesis_generator.py with CHEAP_MODELS/EVAL_TIER_MODELS, named threshold
-constants, assert_no_leakage(), and main() entry points in all scripts.
+**Dataset:** 155 tasks (train=75, dev=30, held_out=50 sealed). All pass scoring_evaluator.
 
-**GitHub remote:** https://github.com/78gk/Sales-Agent-Evaluation-Bench  
+**Training pipeline (Day 4 DONE):**
+- `training/prepare_sft_data.py` → 1,575 SFT pairs (75 tasks × 21x augmentation)
+- `training/lora_train.py` → Unsloth LoRA training script ready for Colab T4
+- `training/run_ablation.py` → Delta A/B harness, dry-run verified (p<0.05 in sim)
 
-**Dataset:** 155 tasks total — train=75, dev=30, held_out=50 (sealed, gitignored).
-All 155 pass `python scoring_evaluator.py --validate` (3/3 OK, 3/3 PASS).
+**Synthesis memos:** 8/8 complete. All ≥300 words, section refs, own evidence, genuine disagreement.
 
-**Next:** Day 4 — Colab T4 LoRA training on Qwen 3.5. See Day-by-day plan below.
+**audit_memo.md:** Trimmed to 579 words (was 646), Gap 2 label added — ROBUST.
+
+**GitHub remote:** https://github.com/78gk/Sales-Agent-Evaluation-Bench
+
+**Next:** Day 5 — Colab T4 real LoRA training run + synthesis generation to reach 250 tasks.
 
 ---
 
@@ -123,11 +125,11 @@ All 155 pass `python scoring_evaluator.py --validate` (3/3 OK, 3/3 PASS).
 
 **Day 1 (DONE):** Repo bootstrap, schema, scoring_evaluator, seeds copied  
 **Day 2 (DONE):** 75 train tasks + 30 dev tasks authored  
-**Day 3 (DONE):** 50 held_out tasks sealed, contamination checks (0 n-gram overlaps, 0 embed overlaps), inter-rater labelling (κ≈0.95), synthesis memos LIMA + Magpie, interim submissions  
-**Day 3 post (DONE):** Rubric remediation — memo.md cross-tabs + worked examples; methodology.md argued justification; synthesis_generator.py + dedup_embed.py created; main() guards added  
-**Day 4 (NEXT):** Colab T4 — `pip install unsloth[colab-new]`, 5-task dummy LoRA on Qwen 3.5 0.8B → HF Hub push test, then real 75-task training run (rank=16, alpha=32, q_proj/v_proj, 16-bit). Also run `synthesis_generator.py --count 60` to reach 250-task corpus.  
-**Day 5:** Delta A/B ablations on held_out (fill `ablations/ablation_results.json`, update C-006/C-007 in evidence_graph.json), write 6 remaining synthesis memos  
-**Day 6:** Model card, blog post (HF community or Substack), community engagement (τ²-Bench GitHub issue), HuggingFace dataset + model push (after staff sign-off)  
+**Day 3 (DONE):** 50 held_out tasks sealed, contamination checks, inter-rater labelling (κ≈0.95), interim submissions  
+**Day 3 post (DONE):** Rubric remediation — memo.md cross-tabs + worked examples; audit_memo trimmed to 579 words; methodology argued justification  
+**Day 4 (DONE):** SFT data prep → 1,575 pairs; lora_train.py (Unsloth, rank=16, alpha=32); run_ablation.py dry-run verified; 8/8 synthesis memos written  
+**Day 5 (NEXT):** Colab T4 — real LoRA training run on 1,575 pairs; synthesis_generator.py --count 95 to reach 250 tasks; Delta A/B on held_out with real adapter  
+**Day 6:** Model card, blog post (HF community), community engagement (τ²-Bench GitHub issue), HuggingFace dataset + model push (after staff sign-off)  
 
 ---
 

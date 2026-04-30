@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scoring_evaluator.py --validate)",
+      "Bash(python generate_tasks.py)",
+      "Bash(python -c ' *)",
+      "Bash(python generate_dev_tasks.py)",
+      "Bash(python generate_held_out_tasks.py)",
+      "Bash(python generation_scripts/dedup_ngram.py)",
+      "Bash(pandoc memo.md -o memo.pdf --pdf-engine=xelatex -V geometry:margin=2cm -V fontsize=11pt)",
+      "Bash(pandoc memo.md -o memo.pdf)",
+      "Bash(python c:/projects/10/week-11/scoring_evaluator.py --validate)",
+      "Bash(which pandoc *)",
+      "Bash(python -c \"import markdown; print\\('markdown: ok'\\)\")",
+      "Bash(python -c \"import sys,json; [print\\(json.dumps\\({k:v for k,v in json.loads\\(l\\).items\\(\\) if k in ['simulation_id','task_id','reward','category','failure_mode','agent_message']}, indent=2\\)\\) for l in sys.stdin]\")",
+      "Bash(python -c \"import sys,json; d=json.loads\\(sys.stdin.read\\(\\)\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(pandoc memo.md -o memo.pdf --pdf-engine=xelatex)",
+      "Bash(pandoc --list-output-formats)",
+      "Bash(pandoc c:/projects/10/week-11/memo.md -o c:/projects/10/week-11/memo.html)",
+      "Bash(pandoc c:/projects/10/week-11/memo.md -o c:/projects/10/week-11/memo.pdf --pdf-engine=weasyprint)",
+      "Bash(pandoc c:/projects/10/week-11/memo.md -o c:/projects/10/week-11/memo.pdf --pdf-engine=prince)",
+      "Bash(python -c \"import subprocess; r = subprocess.run\\(['python', '-m', 'pip', 'show', 'reportlab', 'fpdf2', 'markdown-pdf', 'md2pdf'], capture_output=True, text=True\\); print\\(r.stdout\\)\")",
+      "Bash(python -c \"import fpdf\")",
+      "Bash(python -c \"import reportlab\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(pandoc --version)",
+      "Bash(pandoc memo.md -o memo.pdf --pdf-engine=xelatex -V geometry:margin=1in -V mainfont=\"DejaVu Serif\" -V monofont=\"DejaVu Sans Mono\")",
+      "Bash(pip list *)",
+      "Bash(python -c \"import weasyprint; print\\(weasyprint.__version__\\)\")",
+      "Bash(npm list *)",
+      "Read(//c/Users/kirut2/AppData/Roaming/npm/**)",
+      "Bash(python -c \"from markdown_pdf import MarkdownPdf; print\\('markdown_pdf available'\\)\")",
+      "Bash(python -c \"import markdown; print\\('markdown module:', markdown.__version__\\)\")",
+      "Bash(python -c \"import xhtml2pdf; print\\('xhtml2pdf available'\\)\")",
+      "Read(//c/Program Files \\(x86\\)/Microsoft/Edge/Application/**)",
+      "Bash(python)"
+    ]
+  }
+}
