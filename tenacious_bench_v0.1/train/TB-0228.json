@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech",
+      "signals": {
+        "api_partnership": {
+          "conf": 0.85,
+          "value": "Has API partnership with MajorCorp.",
+          "age_days": 12,
+          "validity_window_days": 10,
+          "source": "press_release"
+        },
+        "product_demo": {
+          "conf": 0.81,
+          "value": "Showcased integration at recent event.",
+          "age_days": 4,
+          "validity_window_days": 30,
+          "source": "event_summary"
+        },
+        "roadmap_integration": {
+          "conf": 0.7,
+          "value": "Plans to integrate with additional platforms in 2024.",
+          "age_days": 15,
+          "validity_window_days": 90,
+          "source": "roadmap"
+        }
+      }
+    },
+    "agent_prompt": "Can you confirm InnovateTech has a formal API partnership with MajorCorp?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0228",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

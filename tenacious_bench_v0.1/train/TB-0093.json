@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "SecureNet Solutions",
+      "signals": {
+        "Recent Security Audit": {
+          "conf": 0.9,
+          "value": "Identified critical vulnerabilities requiring enterprise-grade mitigation.",
+          "age_days": 45,
+          "validity_window_days": 30,
+          "source": "Third-Party Audit Report"
+        },
+        "IT Budget Expansion": {
+          "conf": 0.85,
+          "value": "Publicly announced 20% increase in cybersecurity spending in earnings call.",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "SEC Financial Filing"
+        }
+      }
+    },
+    "agent_prompt": "Evaluate the prospect's urgency to adopt enterprise cybersecurity solutions."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0093",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech Solutions",
+      "signals": {
+        "product_lead_interview": {
+          "conf": 0.85,
+          "value": "Product lead mentioned budget allocated for AI tools",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "LinkedIn post"
+        },
+        "cto_connect_request": {
+          "conf": 0.82,
+          "value": "CTO accepted connection request and commented positively on our solution",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "LinkedIn"
+        },
+        "funding_announcement": {
+          "conf": 0.75,
+          "value": "Company announced $10M Series B funding",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "Crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect context, what is the appropriate phrasing tier and whether to route to human?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0088",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

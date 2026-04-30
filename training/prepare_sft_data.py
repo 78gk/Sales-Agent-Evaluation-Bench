@@ -196,7 +196,7 @@ def main():
     )
     parser.add_argument(
         "--augment-count", type=int, default=20,
-        help="Paraphrase rotations per source task (default: 20 → ~21x total)"
+        help="Paraphrase rotations per source task (default: 20, ~21x total)"
     )
     parser.add_argument(
         "--shuffle", action="store_true",

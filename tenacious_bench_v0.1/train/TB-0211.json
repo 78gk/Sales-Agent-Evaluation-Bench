@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFusion Inc.",
+      "signals": {
+        "pilot_program_launched": {
+          "conf": 0.85,
+          "value": "Launched pilot program with AI vendor",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "G2 Review"
+        },
+        "budget_increase_reported": {
+          "conf": 0.75,
+          "value": "IT budget increased by 20%",
+          "age_days": 5,
+          "validity_window_days": 20,
+          "source": "Press Release"
+        }
+      }
+    },
+    "agent_prompt": "Assess the likelihood of TechFusion Inc. purchasing AI solutions in the next quarter based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0211",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

@@ -1,25 +1,22 @@
 {
   "_note": "Model routing policy for dataset generation. Generator and judge NEVER the same model for the same task.",
   "dev_tier": {
-    "generator": "qwen/qwen3-80b",
-    "judge": "deepseek/deepseek-chat-v3-2",
+    "generator": "qwen/qwen3-235b-a22b",
+    "judge": "deepseek/deepseek-chat-v3-0324",
     "provider": "openrouter",
-    "max_cost_per_task": 0.02
+    "max_cost_per_task": 0.05,
+    "note": "Qwen3-235b-a22b MoE model for generation; DeepSeek V3 (0324) for cross-model judgment"
   },
   "eval_tier": {
     "judge": "anthropic/claude-sonnet-4-6",
     "provider": "openrouter",
-    "allowed_days": [4, 5],
+    "allowed_days": [4, 5, 6],
     "max_passes": 4,
-    "note": "Eval-tier only for sealed held_out scoring — Days 4-5 only"
-  },
-  "trace_derived": {
-    "generator": "openai/gpt-4.1-mini",
-    "judge": "qwen/qwen3-80b",
-    "note": "Lower cost for deterministic trace adaptation"
+    "note": "Eval-tier only for sealed held_out scoring — Days 4-6 only"
   },
   "judge_prompt_template": "generation_scripts/judge_prompt.txt",
   "judge_threshold": 3.5,
   "judge_dimensions": ["coherence", "verifiability", "rubric_clarity"],
+  "judge_filter_mode": "per_dimension",
   "preference_leakage_check": "Assert generator_model != judge_model for every (task_id, generation_run) pair before committing to dataset"
 }

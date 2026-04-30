@@ -111,7 +111,7 @@ def main():
                         default="training/checkpoint",
                         help="Output directory for LoRA adapter")
     parser.add_argument("--hub-repo", type=str,
-                        default=None,
+                        default="kirutew17654321/tenacious-bench-qwen-lora",
                         help="HuggingFace Hub repo to push adapter (requires HF_TOKEN)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print config and data stats without training")
@@ -268,9 +268,11 @@ def main():
     # Push to Hub if requested
     if args.hub_repo:
         import os
-        hf_token = os.environ.get("HF_TOKEN")
+        from huggingface_hub import HfApi
+        hf_token = os.environ.get("HF_TOKEN") or HfApi().token
         if not hf_token:
-            print("WARNING: HF_TOKEN not set — skipping Hub push.")
+            print("WARNING: HF_TOKEN not set and no cached HF credentials — skipping Hub push.")
+            print("Run notebook_login() or set HF_TOKEN env var before training.")
         else:
             print(f"Pushing adapter to HuggingFace Hub: {args.hub_repo}...")
             model.push_to_hub(args.hub_repo, token=hf_token)

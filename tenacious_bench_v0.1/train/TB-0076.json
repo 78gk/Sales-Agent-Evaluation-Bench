@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechCorp Inc.",
+      "signals": {
+        "Product Launch Confirmed": {
+          "conf": 0.85,
+          "value": "TechCorp has officially announced their new AI-powered analytics platform launch in Q4 2023.",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "Press Release"
+        },
+        "Funding Round Secured": {
+          "conf": 0.75,
+          "value": "TechCorp secured $20M Series B funding led by VC Partners.",
+          "age_days": 15,
+          "validity_window_days": 45,
+          "source": "Financial Report"
+        },
+        "Leadership Change Announced": {
+          "conf": 0.6,
+          "value": "CTO resigned and new CTO joined from rival firm.",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "LinkedIn Announcement"
+        }
+      }
+    },
+    "agent_prompt": "Determine the appropriate phrasing tier for TechCorp Inc. based on the provided signals and explain your reasoning."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0076",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

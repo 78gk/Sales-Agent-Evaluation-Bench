@@ -1,45 +1,33 @@
 # Generation Pipeline Routing Policy
 
 **Project:** Tenacious-Bench v0.1
-**Date:** 2026-04-30
+**Date:** 2026-05-01 (updated)
 **Enforces:** Generator ≠ judge for every (task_id, generation_run) pair.
 
 ---
 
 ## Model Tiers
 
-### Dev Tier (bulk generation, Days 1–4)
+### Dev Tier (bulk generation, Days 1–5)
 
 | Role | Model | Provider | Max cost/task |
 |---|---|---|---|
-| Generator | `qwen/qwen3-80b` | OpenRouter | $0.02 |
-| Judge | `deepseek/deepseek-chat-v3-2` | OpenRouter | $0.02 |
+| Generator | `qwen/qwen3-235b-a22b` | OpenRouter | ~$0.04 |
+| Judge | `deepseek/deepseek-chat-v3-0324` | OpenRouter | ~$0.005 |
 
-**Why these models:** Qwen3-80B has strong instruction-following and domain reasoning.
-DeepSeek V3.2 uses a different training lineage, preventing self-preference leakage.
+**Why these models:** Qwen3-235b-a22b is a 235B MoE model with strong instruction-following and domain reasoning.
+DeepSeek V3 (0324) uses a different training lineage, preventing self-preference leakage.
 Neither model was used to develop the scoring rubric or phrasing-tier thresholds.
 
-### Eval Tier (sealed held_out only, Days 4–5)
+### Eval Tier (sealed held_out only, Days 4–6)
 
 | Role | Model | Provider | Allowed days |
 |---|---|---|---|
-| Judge only | `anthropic/claude-sonnet-4-6` | OpenRouter | Days 4–5 |
+| Judge only | `anthropic/claude-sonnet-4-6` | OpenRouter | Days 4–6 |
 
 **Why restricted:** Eval-tier models cost more and may have seen similar data.
 Restricted to held_out calibration (≤4 passes) to contain cost within the $10 cap.
 Never used as a generator.
-
-### Trace-Derived Tier
-
-| Role | Model | Provider |
-|---|---|---|
-| Generator | `openai/gpt-4.1-mini` | OpenRouter |
-| Judge | `qwen/qwen3-80b` | OpenRouter |
-
-**Why GPT-4.1-mini for trace tasks:** Lower cost for deterministic adaptation of existing
-τ²-Bench traces. The task content is largely determined by the source trace; the model
-only adapts phrasing and fills expected fields. Qwen3-80B judges to maintain cross-model
-separation.
 
 ---
 
@@ -68,7 +56,7 @@ discarded, not committed.
 
 ## Judge Filter — Three Dimensions
 
-All synthesis and trace-derived tasks are scored by the judge on three dimensions
+All synthesis tasks are scored by the judge on three dimensions
 (prompt template: `generation_scripts/judge_prompt.txt`):
 
 | Dimension | Threshold | What it checks |
@@ -77,9 +65,9 @@ All synthesis and trace-derived tasks are scored by the judge on three dimension
 | `verifiability` | ≥ 3.5 / 5 | All expected fields are present and machine-checkable |
 | `rubric_clarity` | ≥ 3.5 / 5 | The correct tier is unambiguous given the signals |
 
-**Aggregate threshold:** `mean(coherence, verifiability, rubric_clarity) ≥ 3.5`
+**Aggregate threshold:** every dimension must score ≥ 3.5 individually (no averaging shortcut).
 
-Tasks below threshold on the aggregate OR below 2/5 on any single dimension are discarded.
+Tasks failing any single dimension are discarded. Rejection rate is logged to console during synthesis runs.
 
 ---
 
@@ -89,8 +77,8 @@ Before any task is committed to a split, `generation_scripts/dedup_ngram.py` che
 8-gram overlap with the existing corpus. Tasks sharing any 8-gram with a task in a
 different split are rewritten or discarded. This enforces cross-split textual independence.
 
-Embedding similarity check (`dedup_embed.py`, threshold cosine > 0.85) runs on Day 4
-Colab to catch near-paraphrases that survive the n-gram filter.
+Embedding similarity check (`dedup_embed.py`, threshold cosine > 0.85) runs on Colab
+to catch near-paraphrases that survive the n-gram filter.
 
 ---
 
@@ -101,14 +89,12 @@ Sampling temperature and top-p are fixed per tier and documented in `router_conf
 
 ---
 
-## Budget Allocation
+## Budget Allocation (actual)
 
-| Tier | Tasks | Estimated cost |
+| Tier | Tasks | Actual cost |
 |---|---|---|
-| Synthesis (dev tier) | ~60 tasks | ~$2.40 |
-| Trace-derived (gpt-4.1-mini) | ~30 tasks | ~$0.50 |
-| Eval-tier judge (held_out only) | ≤4 passes × 50 tasks | ~$2.00 |
-| **Total** | | **≤$5.00** |
+| Synthesis (dev tier, train+dev) | ~170 admitted (~340 generated) | ~$7.50 |
+| Eval-tier judge (held_out only) | ≤4 passes × 50 tasks | ~$2.50 reserved |
+| **Total** | | **≤$10.00** |
 
-Remaining $5.00 of the $10 hard cap is held in reserve for retries and ablation scoring.
 All costs logged in `cost_log.md` within 24 hours of each API call.

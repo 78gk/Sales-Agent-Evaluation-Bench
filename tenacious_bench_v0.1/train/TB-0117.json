@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "NovaTech",
+      "signals": {
+        "product_adoption": {
+          "conf": 0.85,
+          "value": "High product adoption rate observed",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "market_report"
+        },
+        "customer_satisfaction": {
+          "conf": 0.75,
+          "value": "Positive customer feedback from recent surveys",
+          "age_days": 10,
+          "validity_window_days": 15,
+          "source": "customer_survey"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect's context, generate a response to the sales inquiry."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0117",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

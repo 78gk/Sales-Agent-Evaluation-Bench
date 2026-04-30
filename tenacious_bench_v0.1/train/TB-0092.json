@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech Solutions",
+      "signals": {
+        "cloud_infra_investment": {
+          "conf": 0.85,
+          "value": "Increased investment in cloud infrastructure",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "G2 report"
+        },
+        "ai_partnership": {
+          "conf": 0.82,
+          "value": "Partnered with leading AI firm",
+          "age_days": 15,
+          "validity_window_days": 30,
+          "source": "TechCrunch article"
+        },
+        "executive_hiring": {
+          "conf": 0.4,
+          "value": "Hiring executives in healthcare division",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "LinkedIn"
+        }
+      }
+    },
+    "agent_prompt": "Evaluate if InnovateTech Solutions is a strategic fit for our enterprise sales initiative."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0092",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

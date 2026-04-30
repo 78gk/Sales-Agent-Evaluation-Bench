@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFrontier",
+      "signals": {
+        "signal_1": {
+          "conf": 0.9,
+          "value": "Enterprise sales up 60% QoQ.",
+          "age_days": 5,
+          "validity_window_days": 10,
+          "source": "Internal report"
+        },
+        "signal_2": {
+          "conf": 0.85,
+          "value": "Partnership with leading cloud provider announced.",
+          "age_days": 8,
+          "validity_window_days": 10,
+          "source": "Press release"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect's context, draft an outreach message that accurately reflects the confidence levels and freshness of the signals regarding TechFrontier's business developments."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == False"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0114",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

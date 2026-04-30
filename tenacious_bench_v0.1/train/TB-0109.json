@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "CloudFlow Solutions",
+      "signals": {
+        "Product Adoption": {
+          "conf": 0.7,
+          "value": "Moderate usage growth in core product",
+          "age_days": 60,
+          "validity_window_days": 30,
+          "source": "Product Analytics"
+        },
+        "Budget Allocation": {
+          "conf": 0.6,
+          "value": "Increased Q3 marketing spend",
+          "age_days": 20,
+          "validity_window_days": 40,
+          "source": "Financial Reports"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's current status based on the provided signals. Provide a brief evaluation of their potential interest without overreaching."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0109",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

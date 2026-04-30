@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "BrightWave Technologies",
+      "signals": {
+        "signal_001": {
+          "conf": 0.72,
+          "value": "Posted job listings for AI engineers",
+          "age_days": 5,
+          "validity_window_days": 30,
+          "source": "LinkedIn"
+        },
+        "signal_002": {
+          "conf": 0.68,
+          "value": "CEO announced new product line in Q&A",
+          "age_days": 40,
+          "validity_window_days": 30,
+          "source": "Earnings Call"
+        }
+      }
+    },
+    "agent_prompt": "Assess the company's intent to invest in AI-driven product development."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0208",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

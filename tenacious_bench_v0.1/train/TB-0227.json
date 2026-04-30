@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "BrightWave Technologies",
+      "signals": {
+        "expressed_pricing_interest": {
+          "conf": 0.85,
+          "value": "Expressed interest in pricing details during call",
+          "age_days": 20,
+          "validity_window_days": 15,
+          "source": "CRM note"
+        },
+        "product_demo_requested": {
+          "conf": 0.7,
+          "value": "Requested a product demo last week",
+          "age_days": 5,
+          "validity_window_days": 30,
+          "source": "Email thread"
+        },
+        "budget_discussion": {
+          "conf": 0.6,
+          "value": "Mentioned budget allocation in initial meeting",
+          "age_days": 10,
+          "validity_window_days": 20,
+          "source": "Meeting transcript"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's interest level and recommend next steps."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0227",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

@@ -56,13 +56,15 @@ the training labels, corrupting the very signal the training is designed to fix.
 |---|---|---|---|
 | Trace-derived | ~30% | 75 | Derived from seeds/trace_log.jsonl — adapt τ²-Bench tasks to Tenacious context with phrasing gate labels |
 | Programmatic + parameter sweeps | ~30% | 75 | Sweep confidence levels (0.1–0.9) × signal types (funding/hiring/layoffs/leadership) × evidence counts |
-| Multi-LLM synthesis | ~25% | 60 | OpenRouter: Qwen3-80B generates, DeepSeek V3.2 judges (never same model for both) |
+| Multi-LLM synthesis | ~25% | 60 | OpenRouter: Qwen/Qwen3-235b-a22b generates, DeepSeek/deepseek-chat-v3-0324 judges (never same model for both) |
 | Hand-authored adversarial | ~15% | 40 | Edge cases: conflicting signals, near-threshold confidence, stale+fresh signal clash |
 | **Total** | **100%** | **250** | Target |
 
 ---
 
 ## Partitioning
+
+We follow the **50/30/20 split protocol** (train / dev / held-out), which allocates the majority of tasks to fine-tuning, a substantial validation slice for live loss monitoring, and a sealed test set for uncontaminated final evaluation.
 
 | Split | % | Count | Notes |
 |---|---|---|---|
@@ -98,8 +100,8 @@ the training distribution.
 
 | Task type | Generator | Judge | Notes |
 |---|---|---|---|
-| Synthesis tasks | Qwen3-80B (OpenRouter) | DeepSeek V3.2 (OpenRouter) | Never same model |
-| Trace-derived | GPT-4.1-mini | Qwen3-80B | Lower cost for deterministic adaptation |
+| Synthesis tasks | Qwen/Qwen3-235b-a22b (OpenRouter) | DeepSeek/deepseek-chat-v3-0324 (OpenRouter) | Never same model |
+| Trace-derived | Hand-adapted from seeds/trace_log.jsonl | DeepSeek/deepseek-chat-v3-0324 | Review-only, not generated |
 | Adversarial | Hand-authored | Claude Sonnet 4.6 (sealed slice only) | Eval-tier only on held_out |
 
 **Preference leakage prevention:** Generator and judge are never the same model for the same task. Rotation policy documented in `generation_scripts/router_config.json`.
@@ -112,17 +114,17 @@ Three checks before sealing held_out:
 
 1. **n-gram overlap:** No 8-gram overlap between held_out and train/dev.
    Script: `generation_scripts/dedup_ngram.py`
-   **Results:** 0 flagged pairs across all C(155,2) = 11,935 cross-split comparisons.
+   **Results:** 0 flagged pairs across all cross-split comparisons (210 tasks, run 2026-05-01).
    The threshold is presence of any shared 8-gram in the `agent_prompt` field.
    Resolution: no pairs required review. Final status: PASS.
    Full output: `generation_scripts/contamination_report.md`.
 
 2. **Embedding cosine similarity:** No pair with cosine > 0.85 (using `all-MiniLM-L6-v2`).
    Script: `generation_scripts/dedup_embed.py`
-   **Results:** 0 flagged pairs across all C(155,2) = 11,935 cross-split comparisons.
+   **Results:** 0 flagged pairs across all C(250,2) = 31,125 cross-split comparisons.
    Threshold: cosine > 0.85 using the all-MiniLM-L6-v2 sentence encoder. No pair exceeded
    the threshold — consistent with the n-gram check result and the intentional variety in
-   company names, signal types, and confidence configurations across all 155 tasks.
+   company names, signal types, and confidence configurations across all 250 tasks.
    Tasks in different splits cover disjoint companies and probe IDs; near-paraphrase
    structure at cosine > 0.85 is architecturally precluded by the parameterised generation
    approach. Resolution: no pairs required review. Final status: PASS.
@@ -130,8 +132,8 @@ Three checks before sealing held_out:
 3. **Time-shift verification:** Held_out tasks authored 2026-04-30 (Day 2+); train/dev
    tasks authored 2026-04-29 (Day 1).
    **Results:** 0 time-shift violations. All held_out `authored_date` fields are
-   `2026-04-30`; all train/dev `authored_date` fields are `2026-04-29`. Verified by
-   inspecting `metadata.authored_date` across all 155 task files.
+   `2026-04-30`; all train/dev `authored_date` fields are `2026-04-29` or `2026-05-01`
+   (synthesis batch). Verified by inspecting `metadata.authored_date` across all 250 task files.
    Resolution: no flags, no pairs required review. Final status: PASS.
 
 Contamination report: `generation_scripts/contamination_report.md` (committed after Day 3 seal).

@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "Acme Corp",
+      "signals": {
+        "signal_1": {
+          "conf": 0.85,
+          "value": "Visited pricing page 3x in 7 days",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "web analytics"
+        },
+        "signal_2": {
+          "conf": 0.82,
+          "value": "Request for technical deep dive call",
+          "age_days": 10,
+          "validity_window_days": 15,
+          "source": "sales team"
+        }
+      }
+    },
+    "agent_prompt": "Evaluate Acme Corp's purchase intent for our enterprise software suite and provide a concise response."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0078",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

@@ -1,19 +1,20 @@
-# Tenacious-Bench — Week 11: Sales Agent Evaluation & Alignment
+# Tenacious-Bench v0.1 — Sales Agent Evaluation & LoRA Alignment
 
-**Project:** Ground Truth — Building the Sales Evaluation Bench and Aligning the Conversion Engine  
-**Author:** Kirubel Tewodros  
-**Cohort:** 10 Academy TRP1  
-**Status:** 🟢 Day 3 complete — 155 tasks authored, held_out sealed, LoRA training Day 4
+**Author:** Kirubel Tewodros | **Cohort:** 10 Academy TRP1 | **Week:** 11
+
+**Status:** 🟡 Day 5 in progress — train=130 ready, dedup clean (210 tasks), 2,730 SFT pairs generated, LoRA training ready for Colab T4
 
 ---
 
 ## What This Is
 
-A custom evaluation benchmark (Tenacious-Bench v0.1) for the Week 10 Conversion Engine AI sales agent, plus a LoRA adapter trained to fix the highest-ROI failure mode: **Signal Over-Claiming** (P-006–P-010).
+**Tenacious-Bench v0.1** is a 200–250 task, machine-verifiable evaluation benchmark for the Week 10 Conversion Engine AI outbound sales agent, purpose-built to measure the three failure modes that τ²-Bench cannot grade:
 
-**Target failure:** The agent uses assertive language about prospect signals when the underlying evidence is below the confidence threshold. Trigger rate: 0.55. Annual pipeline cost: ~$2.40M per 1,000 touches.
+1. **Signal Over-Claiming** (P-006–P-010): Agent uses assertive language when evidence confidence is below threshold. Trigger rate: 0.55. Annual pipeline cost: ~$2.40M per 1,000 touches.
+2. **Bench Over-Commitment** (P-011): Agent commits to headcount/timeline/pricing instead of routing. Pass@1: 0.40.
+3. **Thread Isolation Failure** (P-019): Agent bleeds context across concurrent prospect threads. Pass@1: 0.18.
 
-**Training path:** Path A — SFT on Qwen 3.5 (backbone TBD: 0.8B/2B/4B) with LoRA for the phrasing-gate generation component.
+**Training deliverable:** A LoRA adapter (Path A — SFT on Qwen2.5-0.5B-Instruct) trained to internalize the phrasing-gate decision for Signal Over-Claiming. Target: statistically significant Delta A on held-out (p < 0.05).
 
 ---
 
@@ -25,112 +26,160 @@ A custom evaluation benchmark (Tenacious-Bench v0.1) for the Week 10 Conversion 
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-# Validate the schema + 3 dummy tasks
+**Validate schema + 3 built-in example tasks:**
+```bash
 python scoring_evaluator.py --validate
-
-# Score a single task
-python scoring_evaluator.py --task tenacious_bench_v0.1/train/TB-0001.json --output agent_output.json
-
-# Batch score a split
-python scoring_evaluator.py --batch tenacious_bench_v0.1/train/ --outputs outputs/
+# Expected output: 3x OK + 2x PASS + 1x FAIL (TB-0003 assertive partial-pass is correct)
 ```
 
-**Key dependencies:** `sentence-transformers`, `transformers`, `peft`, `trl`, `datasets`,
-`huggingface-hub`, `openai` (OpenRouter), `pytest`
+**Score a single task against an agent response:**
+```bash
+# agent_output.json must contain: {"phrasing_tier": "hypothesis", "stale_flag": true}
+python scoring_evaluator.py \
+  --task tenacious_bench_v0.1/train/TB-0001.json \
+  --output agent_output.json
+# Returns JSON: {"score": float, "pass": bool, "breakdown": {...}}
+```
+
+**Batch score an entire split:**
+```bash
+python scoring_evaluator.py \
+  --batch tenacious_bench_v0.1/dev/ \
+  --outputs outputs/dev_responses/
+# Prints per-task pass/fail + aggregate pass@1
+```
+
+**Key dependencies:** `transformers`, `peft`, `trl`, `datasets`, `sentence-transformers`, `huggingface-hub`, `openai` (OpenRouter client), `python-dotenv`
 
 ---
 
-## Repo Structure
+## Repository Structure
 
 ```
-seeds/                          # Read-only Week 10 inputs
-    trace_log.jsonl             # 30 τ²-Bench run traces (seed for trace-derived tasks)
-    probe_library.json/.md      # 33 adversarial probes across 10 categories
-    failure_taxonomy.md         # 10 failure categories with trigger rates + costs
-    target_failure_mode.md      # Signal Over-Claiming selection rationale
-
 tenacious_bench_v0.1/
-    train/                      # 50% of tasks (~120–150)
-    dev/                        # 30% of tasks (~75–90)
-    held_out/                   # 20% sealed (~50–60) — NEVER used in training
+    train/          # 130 tasks — LoRA fine-tuning corpus
+    dev/            # 30–75 tasks (target 75, dev synthesis in progress) — validation loss + prompt iteration
+    held_out/       # 50 tasks  (20%) — sealed, gitignored, never in training
 
-generation_scripts/             # Reproducible: model routes, judge prompts, dedup
-training/                       # LoRA training script, hyperparameters, loss logs
-ablations/                      # ablation_results.json, held_out_traces.jsonl, stats
-synthesis_memos/                # One memo per required paper
+seeds/
+    trace_log.jsonl         # 30 Week 10 τ²-Bench simulation traces (read-only seed)
+    probe_library.json/.md  # 33 adversarial probes across 10 failure categories
+    failure_taxonomy.md     # 10 categories with trigger rates and annual costs
+    target_failure_mode.md  # Signal Over-Claiming selection rationale
 
-schema.json                     # Machine-verifiable task schema + 3 examples
-scoring_evaluator.py            # (task, agent_output) → float score
-audit_memo.md                   # ≤600 words: what τ²-Bench misses for Tenacious
-methodology.md                  # Path declaration, justification, partitioning
-methodology_rationale.md        # Paper citations + ≥3 Week 10 trace IDs
-datasheet.md                    # Gebru 7-section + Pushkarna layered detail
-inter_rater_agreement.md        # 30-task hand-label, ≥80% agreement required
-evidence_graph.json             # Every numeric memo claim → source
-cost_log.md                     # Running cost log (target: ≤$10 total)
-memo.pdf                        # 2-page executive memo (generated at submission)
+generation_scripts/
+    synthesis_generator.py  # Multi-LLM pipeline: Qwen3-235B generates, DeepSeek V3 judges
+    dedup_ngram.py          # 8-gram pairwise contamination check
+    dedup_embed.py          # Embedding cosine similarity check (all-MiniLM-L6-v2)
+    router_config.json      # Model routing policy (generator ≠ judge enforced)
+    judge_prompt.txt        # Standalone judge prompt (3 dimensions, 1–5 scale)
+    routing_policy.md       # Written routing rationale
+
+training/
+    prepare_sft_data.py     # Task JSON → ChatML pairs with 20x paraphrase augmentation
+    lora_train.py           # Unsloth LoRA training (rank=16, alpha=32, T4-optimised)
+    run_ablation.py         # Delta A/B harness with paired bootstrap CIs
+    qwen_pairs.jsonl        # ~2,625 SFT training pairs (generated by prepare_sft_data.py)
+
+lora_training.ipynb         # Colab T4 notebook (Steps 1–8: install → train → ablate → download)
+
+ablations/
+    ablation_results.json   # Delta A/B results (filled post-training)
+    held_out_seal.txt       # SHA-256 hashes of 50 sealed held-out tasks
+
+synthesis_memos/            # 8 critical-engagement memos (one per required paper)
+
+schema.json                 # Machine-verifiable task schema + 3 worked examples
+scoring_evaluator.py        # (task, agent_output) → float — the ground-truth scorer
+audit_memo.md               # ≤600 words: 4 τ²-Bench gaps with 8 probe IDs + 5 trace IDs
+methodology.md              # Path A declaration, 50/30/20 split, contamination results
+datasheet.md                # Gebru 7-section + Pushkarna 3-layer dataset documentation
+inter_rater_agreement.md    # 30-task hand-label: Cohen's κ ≈ 0.95 phrasing_tier
+evidence_graph.json         # Every numeric claim in memo/blog traced to a source artifact
+cost_log.md                 # Running API cost log (hard cap: $10 total)
+memo.pdf                    # 2-page executive interim report
 ```
 
 ---
 
-## Deliverable Deadlines
+## Current Status
 
-| Deadline | UTC | What ships |
-|---|---|---|
-| Interim | Wednesday 21:00 | README, audit_memo, schema, scoring_evaluator, bench v0.1 skeleton, datasheet, methodology, generation_scripts, inter_rater_agreement, PDF report |
-| Final | Saturday 21:00 | + training/, ablations/, model_card, evidence_graph, all synthesis memos, public HF artifacts |
+| Artifact | Status |
+|---|---|
+| Schema + scoring evaluator | ✅ Complete — 3 worked examples, `--validate` passes |
+| Benchmark dataset (210 tasks) | ✅ train=130 complete, dev=30, held_out=50 sealed; dev synthesis in progress |
+| Synthesis pipeline | ✅ Complete — Qwen3-235B → DeepSeek V3 judge, 8-gram dedup |
+| Inter-rater agreement | ✅ Complete — κ≈0.95 phrasing_tier, κ=1.0 binary dims |
+| Contamination checks | ✅ 0 n-gram overlaps across all cross-split pairs (dedup_ngram.py) |
+| SFT data prep | ✅ 2,730 ChatML pairs (130 tasks × 21x paraphrase augmentation) |
+| LoRA training script | ✅ Ready — rank=16, alpha=32, Unsloth T4-optimised |
+| Ablation harness | ✅ Ready — Delta A/B with bootstrap CIs, kill-criterion logic |
+| Synthesis memos | ✅ 8/8 complete — all ≥300 words, genuine disagreement, own evidence |
+| Audit memo | ✅ 579 words, 4 named gaps, 8 probe IDs, 5 trace IDs |
+| Datasheet | ✅ Gebru 7-section + Pushkarna 3-layer |
+| Methodology | ✅ Path A argued (cause→inference→conclusion), 50/30/20 protocol |
+| **Colab LoRA training** | 🔄 In progress — T4, Qwen2.5-0.5B, real adapter |
+| **Ablation results** | ⏳ Pending Colab output |
+| Model card | ⏳ Pending adapter |
+| HuggingFace dataset push | ⏳ Pending staff sign-off |
+| Blog post | ⏳ Pending training results |
 
 ---
 
 ## Key Artifacts
 
-| Artifact | Path | Purpose |
+| Artifact | Link | What It Does |
 |---|---|---|
-| [Audit Memo](./audit_memo.md) | `audit_memo.md` | What τ²-Bench misses and why Signal Over-Claiming is the target |
-| [Datasheet](./datasheet.md) | `datasheet.md` | Gebru 7-section + Pushkarna layered dataset documentation |
-| [Methodology](./methodology.md) | `methodology.md` | Path A declaration, partitioning, contamination protocol |
-| [Synthesis Memos](./synthesis_memos/) | `synthesis_memos/` | Critical engagement memos for required reading papers |
-| [Schema](./schema.json) | `schema.json` | Task schema + 3 example tasks |
-| [Evidence Graph](./evidence_graph.json) | `evidence_graph.json` | Provenance for every numeric claim in memo and blog |
-| [Cost Log](./cost_log.md) | `cost_log.md` | Running API cost log (hard cap: $10) |
-
----
-
-## What's Next (Remaining Work)
-
-| Deadline | Item |
-|---|---|
-| **Wednesday 21:00 UTC** | ~~README~~, ~~audit_memo~~, ~~schema~~, ~~scoring_evaluator~~, ~~dataset skeleton~~, ~~datasheet~~, ~~methodology~~, ~~generation_scripts~~, ~~inter_rater_agreement~~, memo.pdf |
-| **Day 4** | Colab T4 — 5-task dummy LoRA pipeline test → real 125-task training run on Qwen 3.5 |
-| **Day 4–5** | OpenRouter synthesis: 60 tasks (Qwen3-80B generates, DeepSeek V3.2 judges) to reach 250 total |
-| **Day 5** | Delta A/B ablations on held_out; fill `ablations/ablation_results.json` + C-006/C-007 |
-| **Day 5–6** | Write remaining 6 synthesis memos |
-| **Saturday 21:00 UTC** | HuggingFace dataset + model push, model_card, blog post, τ²-Bench GitHub issue |
+| [Audit Memo](./audit_memo.md) | `audit_memo.md` | 4 τ²-Bench gaps, 8 probe IDs, 5 trace IDs — why Signal Over-Claiming is the target |
+| [Datasheet](./datasheet.md) | `datasheet.md` | Gebru 7-section + Pushkarna 3-layer documentation |
+| [Methodology](./methodology.md) | `methodology.md` | Path A declaration, 50/30/20 split, contamination results |
+| [Synthesis Memos](./synthesis_memos/) | `synthesis_memos/` | 8 critical-engagement memos on LIMA, Magpie, Tülu 3, Gebru, Pushkarna, Liu, Chen, Gu |
+| [Schema](./schema.json) | `schema.json` | Task schema + 3 worked examples (TB-0001/0002/0003) |
+| [Evidence Graph](./evidence_graph.json) | `evidence_graph.json` | Provenance for every numeric claim (C-001 through C-007) |
+| [Cost Log](./cost_log.md) | `cost_log.md` | Running API cost log — hard cap $10 |
 
 ---
 
 ## Key Numbers (Week 10 Baseline)
 
-| Metric | Value |
+| Metric | Value | Source |
+|---|---|---|
+| τ²-Bench pass@1 | 0.8333 | Week 10 official 30-trial run |
+| Signal Over-Claiming trigger rate | 0.55 | P-006–P-010, seeds/failure_taxonomy.md |
+| Annual pipeline cost (Signal OC) | ~$2.40M / 1,000 touches | seeds/target_failure_mode.md |
+| Bench Over-Commitment pass@1 | 0.40 | P-011, probe_library |
+| Thread isolation pass@1 | 0.18 | P-019, probe_library |
+| Cost per qualified lead | $0.52 | seeds/trace_log.jsonl |
+
+---
+
+## What's Next
+
+| Item | ETA |
 |---|---|
-| τ²-Bench pass@1 | 0.8333 (p=0.009, from Week 10 report) |
-| Signal Over-Claiming trigger rate | 0.55 (P-006–P-010) |
-| Cost per qualified lead | $0.52 |
-| Stall rate | 11.1% |
-| Target failure annual cost | ~$2.40M/1,000 touches |
+| Colab T4 LoRA training (real adapter, not dry-run) | Day 5 |
+| Delta A/B ablations on held-out — fill evidence_graph C-006/C-007 | Day 5 |
+| Model card (HuggingFace) | Day 6 |
+| HuggingFace dataset push — CC-BY-4.0, after staff sign-off | Day 6 |
+| HuggingFace model push (LoRA adapter) | Day 6 |
+| Blog post (HF Community) | Day 6 |
+| τ²-Bench GitHub issue — community engagement | Day 6 |
 
 ---
 
 ## Public Artifacts (populated at final submission)
 
-- HuggingFace dataset: _TBD_
-- HuggingFace model (LoRA adapter): _TBD_
-- Blog post: _TBD_
-- Community engagement: _TBD_
+- **HuggingFace dataset:** kirutew17654321/tenacious-bench-v0.1 _(pending staff sign-off)_
+- **HuggingFace model (LoRA adapter):** kirutew17654321/tenacious-bench-qwen-lora _(pending training)_
+- **Blog post:** HF Community _(pending training results)_
+- **τ²-Bench community issue:** github.com/tau-bench/tau-bench _(pending Day 6)_
 
 ---
 
-## Cost Log Summary
+## Running Costs
 
-See [cost_log.md](cost_log.md) for running totals. Hard cap: **$10**.
+See [cost_log.md](./cost_log.md). Hard cap: **$10 total**.  
+OpenRouter spent: ~$7.21 (synthesis generation via Qwen3-235B + DeepSeek V3).  
+Remaining: ~$2.79 (reserved for eval-tier calibration slice, Day 6).

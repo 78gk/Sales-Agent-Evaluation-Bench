@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "NextGen Robotics",
+      "signals": {
+        "New Product Launch": {
+          "conf": 0.85,
+          "value": "Preparing to launch a new line of industrial robots",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "press release"
+        },
+        "Sales Growth": {
+          "conf": 0.72,
+          "value": "20% increase in Q3 sales figures",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "quarterly report"
+        }
+      }
+    },
+    "agent_prompt": "Assess the likelihood of NextGen Robotics expanding their product line based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0101",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

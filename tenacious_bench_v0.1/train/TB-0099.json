@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFusion Corp",
+      "signals": {
+        "signal_pilot_commitment": {
+          "conf": 0.85,
+          "value": "Verbal agreement for pilot signed by TechFusion CTO",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "Internal meeting notes"
+        },
+        "signal_budget_allocated": {
+          "conf": 0.4,
+          "value": "Budget allocation mentioned in Q3 roadmap email",
+          "age_days": 5,
+          "validity_window_days": 30,
+          "source": "Public roadmap document"
+        }
+      }
+    },
+    "agent_prompt": "Assess whether TechFusion Corp is ready to proceed with the pilot based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0099",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

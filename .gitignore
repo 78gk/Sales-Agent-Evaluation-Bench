@@ -25,6 +25,7 @@ training/*.pt
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!lora_training.ipynb
 
 # OS
 .DS_Store

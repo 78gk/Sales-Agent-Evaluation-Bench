@@ -1,21 +1,21 @@
 # Contamination Report — Tenacious-Bench v0.1
 
 **Method:** 8-gram fingerprint overlap across train / dev / held_out  
-**Date:** 2026-04-30  
+**Date:** 2026-05-01  
 **Status:** PASS
 
 ## Split Sizes
 
 | Split | Tasks |
 |---|---|
-| train | 125 |
-| dev | 75 |
+| train | 130 |
+| dev | 30 |
 | held_out | 50 |
-| **Total** | **250** |
+| **Total** | **210** |
 
 ## Result
 
-No 8-gram overlaps detected across 250 tasks.
+No 8-gram overlaps detected across 210 tasks.
 
 Every `agent_prompt` in held_out is textually distinct from all train and dev prompts.
 

@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "AutoDrive Innovations",
+      "signals": {
+        "patent filing status": {
+          "conf": 0.7,
+          "value": "Patent application delayed due to regulatory review",
+          "age_days": 5,
+          "validity_window_days": 4,
+          "source": "Patent Office Database"
+        },
+        "r_and_d_budget": {
+          "conf": 0.65,
+          "value": "Increased R&D investment reported in Q4 earnings call",
+          "age_days": 3,
+          "validity_window_days": 5,
+          "source": "Financial News Article"
+        }
+      }
+    },
+    "agent_prompt": "Analyze the prospect's signals and select the appropriate phrasing tier with proper stale disclosure."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0107",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

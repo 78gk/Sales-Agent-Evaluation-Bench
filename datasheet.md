@@ -23,17 +23,18 @@ No external funding. LLM API costs capped at $10 (see cost_log.md).
 Each instance is an evaluation task: a prospect context (company signals with confidence scores and age), an agent prompt, expected output fields (phrasing_tier, routed_to_human, stale_disclosed, thread_clean), and a machine-verifiable scoring rubric.
 
 **How many instances?**  
-Final Submission: 250 tasks (completed Day 5).
-Final split: 125 train / 75 dev / 50 held_out (sealed).
+210 tasks (Day 5); target 230–250 after dev synthesis.
+Current split: 130 train / 30 dev / 50 held_out (sealed).
 
-**Authoring mode distribution (FINAL 250-task corpus):**  
+**Authoring mode distribution (as of Day 5 train-complete push):**  
 
-| Mode | Current Count | Current % | Notes |
+| Mode | Count | % | Notes |
 |---|---|---|---|
-| adversarial | 83 | 33% | Hand-authored high-risk boundary cases |
-| programmatic | 133 | 53% | Parameter sweeps (including Day 5 batch addition) |
-| trace_derived | 34 | 14% | Derived from seeds/trace_log.jsonl |
-| synthesis | 0 | 0% | Substituted with programmatic zero-cost generator |
+| adversarial | 83 | 40% | Hand-authored high-risk boundary cases (18 train + 15 dev + 50 held_out) |
+| synthesis | 55 | 26% | Multi-LLM synthesis, Qwen/Qwen3-235b-a22b → DeepSeek/deepseek-chat-v3-0324 (train only; dev synthesis in progress) |
+| trace_derived | 34 | 16% | Derived from seeds/trace_log.jsonl (33 train + 1 dev) |
+| programmatic | 38 | 18% | Parameter sweeps (24 train + 14 dev) |
+| **Total** | **210** | **100%** | Dev synthesis will add ~25 more synthesis tasks |
 
 **Per-Authoring-Mode Descriptions:**
 
@@ -41,7 +42,7 @@ Final split: 125 train / 75 dev / 50 held_out (sealed).
 
 *Programmatic tasks* are generated via parameter sweeps: for each combination of (signal_type ∈ {funding, hiring, layoffs, leadership}, confidence ∈ {0.1, 0.3, 0.5, 0.7, 0.9}, evidence_count ∈ {1, 2, 3}), a task template is instantiated with randomized company names and prospect contexts. These tasks are deterministic and reproducible. Example: (signal_type=hiring, confidence=0.45, evidence_count=2) generates a task where the agent sees one hiring signal and one funding signal, both at 0.45 confidence — testing the inquiry vs. hypothesis tier boundary.
 
-*Synthesis tasks* are generated on-the-fly via multi-LLM synthesis: Qwen3-80B generates candidate tasks given a failure category and schema constraints; DeepSeek V3.2 (separate model) evaluates the candidate on three dimensions (coherence, verifiability, rubric_clarity) using `generation_scripts/judge_prompt.txt`; tasks above threshold are deduped and committed. These tasks exhibit higher diversity and more natural language variation than programmatic tasks. Example: a synthesis task might describe a prospect with conflicting signals (positive hiring trend but recent layoff announcement, 3 days old) requiring the agent to reconcile and express appropriate uncertainty.
+*Synthesis tasks* are generated on-the-fly via multi-LLM synthesis: Qwen/Qwen3-235b-a22b generates candidate tasks given a failure category and schema constraints; DeepSeek/deepseek-chat-v3-0324 (a separate model) evaluates each candidate on three dimensions (coherence, verifiability, rubric_clarity) using `generation_scripts/judge_prompt.txt`; tasks scoring ≥3.5 on all dimensions are deduped via 8-gram overlap check and committed. Generator ≠ judge is enforced by assertion in the pipeline. These tasks exhibit higher diversity and more natural language variation than programmatic tasks. Example: a synthesis task might describe a prospect with conflicting signals (positive hiring trend but recent layoff announcement, 3 days old) requiring the agent to reconcile and express appropriate uncertainty.
 
 *Adversarial tasks* are hand-authored against specific probes from `seeds/probe_library.json` to stress-test edge cases: near-threshold confidence values (0.49 vs. 0.51, crossing the inquiry/hypothesis boundary), stale-signal mixtures (two signals valid, one expired), cross-thread entity mentions, and capacity-commitment requests that should trigger abstention. These are authored by the dataset creator (Kirubel Tewodros) with full domain knowledge and represent the most challenging evaluation scenarios.
 
@@ -68,7 +69,7 @@ No. All company names are fictitious (Tenacious, Northstack, Pellucid Bio, Synth
 **How was data collected?**  
 - trace_derived: adapted from `seeds/trace_log.jsonl` (30 τ²-Bench retail simulation traces)
 - programmatic: Python scripts sweep signal confidence (0.1–0.9), signal type, staleness, and evidence count
-- synthesis: OpenRouter multi-LLM generation (Qwen3-80B) with cross-model judgment (DeepSeek V3.2)
+- synthesis: OpenRouter multi-LLM generation (Qwen/Qwen3-235b-a22b) with cross-model judgment (DeepSeek/deepseek-chat-v3-0324)
 - adversarial: hand-authored by Kirubel Tewodros against probe IDs P-006–P-014, P-019–P-020, P-029–P-031
 
 **Who collected the data?**  

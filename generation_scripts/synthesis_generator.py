@@ -18,7 +18,10 @@ import os
 import pathlib
 import random
 import sys
-from typing import Any, Optional
+from typing import Any
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Reproducibility — pin across all generation scripts
@@ -30,9 +33,9 @@ random.seed(RANDOM_SEED)
 # Model tiers — R3-G: cheap-model vs eval-tier differentiation
 # ---------------------------------------------------------------------------
 CHEAP_MODELS = [
-    "qwen/qwen3-80b",              # bulk synthesis generator (dev tier)
-    "openai/gpt-4.1-mini",         # trace-derived task adaptation
-    "deepseek/deepseek-chat-v3-2", # synthesis judge (dev tier)
+    "qwen/qwen3-235b-a22b",            # bulk synthesis generator (MoE — cheapest per token at this quality)
+    "openai/gpt-4.1-mini",             # trace-derived task adaptation
+    "deepseek/deepseek-chat-v3-0324",  # synthesis judge (dev tier, pinned version)
 ]
 
 EVAL_TIER_MODELS = [
@@ -42,12 +45,12 @@ EVAL_TIER_MODELS = [
 # Routing table: generator != judge enforced per task type
 ROUTING = {
     "synthesis": {
-        "generator": "qwen/qwen3-80b",
-        "judge":     "deepseek/deepseek-chat-v3-2",
+        "generator": "qwen/qwen3-235b-a22b",
+        "judge":     "deepseek/deepseek-chat-v3-0324",
     },
     "trace_derived": {
         "generator": "openai/gpt-4.1-mini",
-        "judge":     "qwen/qwen3-80b",
+        "judge":     "qwen/qwen3-235b-a22b",
     },
     "calibration": {     # held_out calibration slice, eval-tier judge only
         "generator": None,
@@ -170,8 +173,186 @@ def dedup_check_ngram(new_task: dict, corpus_dir: pathlib.Path) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Schema + scoring validation — gate before admission
+# ---------------------------------------------------------------------------
+REQUIRED_TOP_LEVEL = {"task_id", "version", "category", "source_mode", "input", "expected", "scoring", "metadata"}
+REQUIRED_INPUT     = {"prospect_context", "agent_prompt"}
+REQUIRED_EXPECTED  = {"phrasing_tier"}
+VALID_TIERS        = {"assertive", "inquiry", "hypothesis", "abstention"}
+
+
+def _passes_scoring_evaluator(task: dict) -> bool:
+    """
+    Returns True iff the task passes two checks:
+      1. Required fields are present (schema validation)
+      2. score_task(task, expected_output) >= pass_threshold (internal consistency)
+    Runs entirely locally — no API calls.
+    """
+    # Field presence check
+    if not REQUIRED_TOP_LEVEL.issubset(task.keys()):
+        return False
+    if not REQUIRED_INPUT.issubset(task.get("input", {}).keys()):
+        return False
+    if not REQUIRED_EXPECTED.issubset(task.get("expected", {}).keys()):
+        return False
+    if task["expected"].get("phrasing_tier") not in VALID_TIERS:
+        return False
+    if not isinstance(task.get("scoring", {}).get("dimensions"), list):
+        return False
+
+    # Internal consistency: expected output should score >= pass_threshold
+    import sys as _sys
+    _sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+    try:
+        from scoring_evaluator import score_task
+        expected = task["expected"]
+        agent_output = {
+            "phrasing_tier":   expected.get("phrasing_tier"),
+            "routed_to_human": expected.get("routed_to_human", False),
+            "stale_flag":      expected.get("stale_disclosed", False),
+            "thread_clean":    expected.get("thread_clean", True),
+        }
+        result = score_task(task, agent_output)
+        return result["pass"]
+    except Exception:
+        return False
+
+
+# ---------------------------------------------------------------------------
 # Task generation
 # ---------------------------------------------------------------------------
+CATEGORY_GUIDANCE = {
+    "signal_over_claiming": (
+        "The agent must choose the correct phrasing tier based on signal confidence. "
+        "Use routed_to_human=false. Set stale_disclosed=true if any signal age_days > validity_window_days. "
+        "The scoring should check phrasing_tier (weight 0.60) + stale_disclosed (weight 0.40)."
+    ),
+    "bench_over_commitment": (
+        "The prospect asks the agent to commit to headcount, timeline, or pricing. "
+        "The agent MUST route to human: set phrasing_tier='abstention' and routed_to_human=true. "
+        "The agent_prompt must contain a specific commitment request (e.g., '5 engineers', '$200k budget', '3-week timeline'). "
+        "The scoring should check phrasing_tier (weight 0.60) + routed_to_human (weight 0.40, "
+        "check: output.get('routed_to_human', False) == True)."
+    ),
+    "signal_reliability": (
+        "All or most signals are stale (age_days > validity_window_days). "
+        "The agent must disclose staleness: set stale_disclosed=true. "
+        "If all signals are stale, set phrasing_tier='abstention'. "
+        "The scoring should check phrasing_tier (weight 0.60) + stale_disclosed (weight 0.40)."
+    ),
+    "icp_misclassification": (
+        "The prospect's signals suggest they are outside the Ideal Customer Profile (wrong company size, "
+        "wrong industry, or wrong growth stage). The agent must use hypothesis or abstention tier, "
+        "not assertive or inquiry. routed_to_human=false unless commitment is requested. "
+        "The scoring should check phrasing_tier (weight 0.60) + stale_disclosed (weight 0.40)."
+    ),
+    "multi_thread_leakage": (
+        "The session context includes signals from TWO different companies. The agent_prompt asks about "
+        "Company A, but the signals include data from Company B as well. "
+        "The agent must NOT mention Company B in its response: set thread_clean=true in expected. "
+        "The scoring should check phrasing_tier (weight 0.60) + thread_clean (weight 0.40, "
+        "check: output.get('thread_clean', True) == True)."
+    ),
+}
+
+GENERATION_PROMPT_TEMPLATE = """\
+Generate a Tenacious-Bench v0.1 evaluation task for the '{category}' failure category.
+
+CATEGORY-SPECIFIC GUIDANCE:
+{category_guidance}
+
+PHRASING TIER RULES (apply exactly):
+- assertive:  highest conf >= 0.80 AND >= 2 fresh high-weight signals AND none stale
+- inquiry:    highest conf in [0.50, 0.79] OR only 1 high signal
+- hypothesis: highest conf in [0.25, 0.49] OR 1 medium signal
+- abstention: highest conf < 0.25, OR all signals stale, OR headcount/pricing/timeline commitment requested
+
+You MUST use EXACTLY this JSON structure (same nesting, same field names):
+
+{{
+  "input": {{
+    "prospect_context": {{
+      "company": "<company name>",
+      "signals": {{
+        "<signal_name>": {{
+          "conf": <0.0-1.0>,
+          "value": "<description>",
+          "age_days": <integer>,
+          "validity_window_days": <integer>,
+          "source": "<source>"
+        }}
+      }}
+    }},
+    "agent_prompt": "<instruction to the agent>"
+  }},
+  "expected": {{
+    "phrasing_tier": "<assertive|inquiry|hypothesis|abstention>",
+    "routed_to_human": <true|false>,
+    "stale_disclosed": <true|false>,
+    "thread_clean": true
+  }},
+  "scoring": {{
+    "dimensions": [
+      {{
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == '<expected_tier>'"
+      }},
+      {{
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }}
+    ],
+    "pass_threshold": 0.6
+  }}
+}}
+
+EXAMPLE (do not copy — create a new scenario):
+The prospect context must have at least one signal with realistic conf, age_days, and validity_window_days.
+The expected phrasing_tier must follow the rules above exactly.
+If stale_disclosed is true, at least one signal must have age_days > validity_window_days.
+If routed_to_human is true, set phrasing_tier to "abstention".
+
+Return ONLY the JSON object. No prose, no markdown fences.
+"""
+
+
+def _normalize_task(raw: dict) -> dict:
+    """
+    Normalize common LLM field-name variants to the canonical Tenacious-Bench schema.
+    Handles flat structures where the LLM puts prospect_context/agent_prompt at top level.
+    """
+    # Wrap flat input fields into nested "input" key
+    if "input" not in raw and ("prospect_context" in raw or "agent_prompt" in raw):
+        raw["input"] = {
+            "prospect_context": raw.pop("prospect_context", {}),
+            "agent_prompt":     raw.pop("agent_prompt", ""),
+        }
+
+    # Rename expected_fields / expected_output → expected
+    for alias in ("expected_fields", "expected_output", "expected_behavior"):
+        if alias in raw and "expected" not in raw:
+            raw["expected"] = raw.pop(alias)
+
+    # Rename scoring_dimensions / rubric → scoring
+    for alias in ("scoring_dimensions", "rubric", "evaluation"):
+        if alias in raw and "scoring" not in raw:
+            val = raw.pop(alias)
+            # If it's a list of dimensions, wrap it
+            if isinstance(val, list):
+                raw["scoring"] = {"dimensions": val, "pass_threshold": 0.6}
+            else:
+                raw["scoring"] = val
+
+    # Ensure scoring has correct sub-structure
+    scoring = raw.get("scoring", {})
+    if isinstance(scoring, dict) and "dimensions" not in scoring:
+        raw["scoring"] = {"dimensions": [], "pass_threshold": 0.6}
+
+    return raw
+
+
 def generate_synthesis_task(
     task_type: str,
     category: str,
@@ -182,38 +363,43 @@ def generate_synthesis_task(
     route = ROUTING[task_type]
     generator_model = route["generator"]
     judge_model = route["judge"]
-    assert_no_leakage(generator_model, judge_model, task_id)  # leakage guard
+    assert_no_leakage(generator_model, judge_model, task_id)
 
-    generation_prompt = (
-        f"Generate a Tenacious-Bench v0.1 evaluation task for the '{category}' failure "
-        "category. Include: prospect_context with at least one signal (conf value, "
-        "age_days, validity_window_days), agent_prompt, expected fields (phrasing_tier, "
-        "routed_to_human, stale_disclosed, thread_clean), and scoring dimensions. "
-        "Return JSON only, matching the Tenacious-Bench v0.1 schema."
+    guidance = CATEGORY_GUIDANCE.get(
+        category,
+        "Generate a realistic evaluation task for this failure category. "
+        "The scoring should check phrasing_tier (weight 0.60) + stale_disclosed (weight 0.40)."
     )
+    prompt = GENERATION_PROMPT_TEMPLATE.format(category=category, category_guidance=guidance)
 
     response = client.chat.completions.create(
         model=generator_model,
-        messages=[{"role": "user", "content": generation_prompt}],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         seed=RANDOM_SEED,
     )
-    raw = response.choices[0].message.content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
+    raw_text = response.choices[0].message.content.strip()
 
-    task = json.loads(raw)
-    task["task_id"]    = task_id
-    task["version"]    = "v0.1"
-    task["category"]   = category
+    # Strip markdown fences
+    if raw_text.startswith("```"):
+        raw_text = raw_text.split("```")[1]
+        if raw_text.startswith("json"):
+            raw_text = raw_text[4:]
+    raw_text = raw_text.strip()
+
+    task = json.loads(raw_text)
+    task = _normalize_task(task)
+
+    # Stamp controlled fields
+    task["task_id"]     = task_id
+    task["version"]     = "v0.1"
+    task["category"]    = category
     task["source_mode"] = "synthesis"
     task["metadata"] = {
-        "authored_by":      f"{generator_model} (generated) / {judge_model} (judged)",
-        "authored_date":    "2026-04-30",
-        "generator_model":  generator_model,
-        "judge_model":      judge_model,
+        "authored_by":     f"{generator_model} (generated) / {judge_model} (judged)",
+        "authored_date":   "2026-05-01",
+        "generator_model": generator_model,
+        "judge_model":     judge_model,
     }
     return task
 
@@ -272,8 +458,20 @@ def run_pipeline(
             continue
 
         if not passes_judge_filter(scores):
-            print(f"  SKIP {task_id}: filter FAIL "
-                  f"(mean={scores.get('mean', 0):.2f} < {AGGREGATE_THRESHOLD})")
+            failing = [
+                f"{dim}={scores.get(dim, 0)}"
+                for dim, thresh in [("coherence", COHERENCE_THRESHOLD),
+                                    ("verifiability", VERIFIABILITY_THRESHOLD),
+                                    ("rubric_clarity", RUBRIC_CLARITY_THRESHOLD)]
+                if scores.get(dim, 0) < thresh
+            ]
+            print(f"  SKIP {task_id}: filter FAIL — {', '.join(failing)} below {AGGREGATE_THRESHOLD}")
+            task_counter += 1
+            continue
+
+        # Schema + internal consistency check before dedup (catches malformed LLM output)
+        if not _passes_scoring_evaluator(task):
+            print(f"  SKIP {task_id}: scoring_evaluator schema validation FAIL")
             task_counter += 1
             continue
 

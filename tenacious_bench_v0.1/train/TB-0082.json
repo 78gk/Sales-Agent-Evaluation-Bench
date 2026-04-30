@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFusion Inc.",
+      "signals": {
+        "press_release": {
+          "conf": 0.85,
+          "value": "Announced new product line in press release",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "PR Agency"
+        },
+        "beta_product_status": {
+          "conf": 0.75,
+          "value": "Internal memo reveals product still in beta",
+          "age_days": 25,
+          "validity_window_days": 20,
+          "source": "Internal Document"
+        },
+        "job_posting": {
+          "conf": 0.65,
+          "value": "Posted job for project manager in unrelated department",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "LinkedIn"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect's recent activities, should we consider them a high-priority lead for immediate outreach?"
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0082",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}
