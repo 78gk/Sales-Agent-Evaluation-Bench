@@ -1,5 +1,17 @@
 # CLAUDE.md — Tenacious-Bench / Week 11
 
+## ⚠️ CLAUDE CODE HANDOFF INSTRUCTIONS (DAY 5)
+The previous agent reverted the 95 programmatic tasks because they violated the 'multi-LLM synthesis' rubric requirement. The user has now supplied their `OPENROUTER_API_KEY` in `.env`.
+Your immediate tasks:
+1. Ensure the key is loaded from `.env`.
+2. Run `python generation_scripts/synthesis_generator.py --count 50 --output-dir tenacious_bench_v0.1/train --task-id-start 76`
+3. Run `python generation_scripts/synthesis_generator.py --count 45 --output-dir tenacious_bench_v0.1/dev --task-id-start 156`
+4. Run `python generation_scripts/dedup_ngram.py` to ensure 0 overlap.
+5. Re-run `python training/prepare_sft_data.py` to include the new synthesis tasks.
+6. Hand back to the User to execute `lora_training.ipynb` on Colab T4 GPU.
+
+---
+
 ## What this project is
 
 Week 11 of 10 Academy TRP1. Build **Tenacious-Bench v0.1** — a custom evaluation dataset (200–300 tasks) for the Week 10 AI outbound sales agent — then train a **LoRA adapter** (Path A, SFT) on Qwen 3.5 to fix the highest-ROI failure mode.
