@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0162",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Xero AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.53,
+          "value": "open engineering roles",
+          "age_days": 12,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Xero AI (conf=0.53, 12 days old signal). Expected tier: inquiry."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-006] Boundary test: conf=0.53 \u2192 inquiry."
+  }
+}

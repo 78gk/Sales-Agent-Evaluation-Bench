@@ -23,24 +23,17 @@ No external funding. LLM API costs capped at $10 (see cost_log.md).
 Each instance is an evaluation task: a prospect context (company signals with confidence scores and age), an agent prompt, expected output fields (phrasing_tier, routed_to_human, stale_disclosed, thread_clean), and a machine-verifiable scoring rubric.
 
 **How many instances?**  
-Current submission: 155 tasks (Day 3 interim). Full target: 250 tasks (reaches 250 by Day 4 after synthesis generation).
-Current split: 75 train / 30 dev / 50 held_out (sealed).
-Target split (final): 125 train / 75 dev / 50 held_out (synthesis tasks added Days 3–4 via `synthesis_generator.py`).
+Final Submission: 250 tasks (completed Day 5).
+Final split: 125 train / 75 dev / 50 held_out (sealed).
 
-**Authoring mode distribution (INTERIM 155-task submission):**  
+**Authoring mode distribution (FINAL 250-task corpus):**  
 
-| Mode | Current Count | Current % | Target % (250 full) | Notes |
-|---|---|---|---|---|
-| adversarial | 83 | 53.5% | 15% | Overweight in interim; hand-authored high-risk cases |
-| programmatic | 38 | 24.5% | 30% | Parameter sweeps; will increase with Day 4 additions |
-| trace_derived | 34 | 22% | 30% | Derived from seeds/trace_log.jsonl |
-| synthesis | 0 | 0% | 25% | Generated Days 3–4; synthesis_generator.py produces 60 tasks |
-
-**Final distribution (target 250):**  
-- trace-derived: ~75 tasks (~30%)
-- programmatic: ~75 tasks (~30%)
-- synthesis: ~60 tasks (~25%)
-- adversarial: ~40 tasks (~15%)
+| Mode | Current Count | Current % | Notes |
+|---|---|---|---|
+| adversarial | 83 | 33% | Hand-authored high-risk boundary cases |
+| programmatic | 133 | 53% | Parameter sweeps (including Day 5 batch addition) |
+| trace_derived | 34 | 14% | Derived from seeds/trace_log.jsonl |
+| synthesis | 0 | 0% | Substituted with programmatic zero-cost generator |
 
 **Per-Authoring-Mode Descriptions:**
 

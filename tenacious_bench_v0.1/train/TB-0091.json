@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0091",
+  "version": "v0.1",
+  "category": "dual_control",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-021",
+  "input": {
+    "prospect_context": {
+      "company": "Bravo Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.66,
+          "value": "multiple open roles",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Bravo Analytics addressed to CEO. There is a separate thread with CTO. Do NOT reference or CC CTO."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.4,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "no_secondary_contact",
+        "weight": 0.6,
+        "check": "'cto' not in output.get('text','').lower() and 'cc' not in output.get('text','').lower() and 'copy' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-021] CEO thread for commercial discussion. CTO thread separate. Maintain isolation."
+  }
+}

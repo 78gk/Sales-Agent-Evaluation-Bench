@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0186",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "trace_derived",
+  "seed_probe_id": "P-029",
+  "input": {
+    "prospect_context": {
+      "company": "Vale AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.65,
+          "value": "open engineering roles",
+          "age_days": 62,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Vale AI (conf=0.65, 62 days old signal). Expected tier: hypothesis."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-029] hiring stale: 62d > 60d \u2192 hypothesis + stale_flag."
+  }
+}

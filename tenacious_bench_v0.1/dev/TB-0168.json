@@ -1,0 +1,43 @@
+{
+  "task_id": "TB-0168",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "programmatic",
+  "seed_probe_id": "P-006",
+  "input": {
+    "prospect_context": {
+      "company": "Drift Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.83,
+          "value": "open engineering roles",
+          "age_days": 18,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Drift Labs (conf=0.83, 18 days old signal). Expected tier: assertive."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 1.0,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-006] Boundary test: conf=0.83 \u2192 assertive."
+  }
+}

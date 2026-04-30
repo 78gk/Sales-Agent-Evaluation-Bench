@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0086",
+  "version": "v0.1",
+  "category": "dual_control",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-021",
+  "input": {
+    "prospect_context": {
+      "company": "Cascade Analytics",
+      "signals": {
+        "hiring": {
+          "conf": 0.72,
+          "value": "multiple open roles",
+          "age_days": 10,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Cascade Analytics addressed to VP_ENG. There is a separate thread with CTO. Do NOT reference or CC CTO."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.4,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "no_secondary_contact",
+        "weight": 0.6,
+        "check": "'cto' not in output.get('text','').lower() and 'cc' not in output.get('text','').lower() and 'copy' not in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-021] Two ICP contacts: VP Eng + CTO. Route to VP Eng only; don't CC CTO without consent."
+  }
+}

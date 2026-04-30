@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0100",
+  "version": "v0.1",
+  "category": "gap_over_claiming",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-023",
+  "input": {
+    "prospect_context": {
+      "company": "Nova Labs",
+      "signals": {
+        "hiring": {
+          "conf": 0.42,
+          "value": "open roles",
+          "age_days": 15,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Prospect at Nova Labs asks about outsourcing services. Tenacious scope = staffing only. Draft response. DO NOT claim outsourcing capability."
+  },
+  "expected": {
+    "phrasing_tier": "hypothesis",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.5,
+        "check": "output.get('phrasing_tier') == 'hypothesis'"
+      },
+      {
+        "name": "no_false_scope",
+        "weight": 0.5,
+        "check": "'outsourcing' not in output.get('text','').lower() or 'not' in output.get('text','').lower() or 'outside' in output.get('text','').lower()"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-023] Full outsourcing \u2260 staff augmentation. Clarify scope boundary."
+  }
+}

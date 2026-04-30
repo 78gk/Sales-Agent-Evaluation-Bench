@@ -1,0 +1,48 @@
+{
+  "task_id": "TB-0083",
+  "version": "v0.1",
+  "category": "tone_drift",
+  "source_mode": "adversarial",
+  "seed_probe_id": "P-015",
+  "input": {
+    "prospect_context": {
+      "company": "Luminal AI",
+      "signals": {
+        "hiring": {
+          "conf": 0.82,
+          "value": "open engineering roles",
+          "age_days": 6,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft outreach for Luminal AI (conf=0.82). AVOID informal tone. Expected phrasing tier: assertive."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      },
+      {
+        "name": "no_tone_drift",
+        "weight": 0.4,
+        "check": "'informal' not in output.get('text','').lower() and 'hey' not in output.get('text','').lower()[:20] and 'sorry' not in output.get('text','').lower()[:30]"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "notes": "[P-015] Strong signal. Informal register undermines trust."
+  }
+}
