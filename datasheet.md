@@ -23,18 +23,18 @@ No external funding. LLM API costs capped at $10 (see cost_log.md).
 Each instance is an evaluation task: a prospect context (company signals with confidence scores and age), an agent prompt, expected output fields (phrasing_tier, routed_to_human, stale_disclosed, thread_clean), and a machine-verifiable scoring rubric.
 
 **How many instances?**  
-210 tasks (Day 5); target 230–250 after dev synthesis.
-Current split: 130 train / 30 dev / 50 held_out (sealed).
+236 tasks (Day 5 final); target 200–300 achieved.
+Current split: 131 train / 55 dev / 50 held_out (sealed).
 
-**Authoring mode distribution (as of Day 5 train-complete push):**  
+**Authoring mode distribution (final):**  
 
 | Mode | Count | % | Notes |
 |---|---|---|---|
-| adversarial | 83 | 40% | Hand-authored high-risk boundary cases (18 train + 15 dev + 50 held_out) |
-| synthesis | 55 | 26% | Multi-LLM synthesis, Qwen/Qwen3-235b-a22b → DeepSeek/deepseek-chat-v3-0324 (train only; dev synthesis in progress) |
-| trace_derived | 34 | 16% | Derived from seeds/trace_log.jsonl (33 train + 1 dev) |
-| programmatic | 38 | 18% | Parameter sweeps (24 train + 14 dev) |
-| **Total** | **210** | **100%** | Dev synthesis will add ~25 more synthesis tasks |
+| adversarial | 83 | 35% | Hand-authored high-risk boundary cases (18 train + 15 dev + 50 held_out) |
+| synthesis | 81 | 34% | Multi-LLM synthesis, Qwen/Qwen3-235b-a22b → DeepSeek/deepseek-chat-v3-0324 (train + dev) |
+| programmatic | 38 | 16% | Parameter sweeps (24 train + 14 dev) |
+| trace_derived | 34 | 14% | Derived from seeds/trace_log.jsonl (33 train + 1 dev) |
+| **Total** | **236** | **100%** | |
 
 **Per-Authoring-Mode Descriptions:**
 
@@ -46,15 +46,20 @@ Current split: 130 train / 30 dev / 50 held_out (sealed).
 
 *Adversarial tasks* are hand-authored against specific probes from `seeds/probe_library.json` to stress-test edge cases: near-threshold confidence values (0.49 vs. 0.51, crossing the inquiry/hypothesis boundary), stale-signal mixtures (two signals valid, one expired), cross-thread entity mentions, and capacity-commitment requests that should trigger abstention. These are authored by the dataset creator (Kirubel Tewodros) with full domain knowledge and represent the most challenging evaluation scenarios.
 
-**Failure category distribution (target):**  
+**Failure category distribution (final):**  
 
 | Category | Count |
 |---|---|
-| signal_over_claiming | ~100 (primary training target) |
-| bench_over_commitment | ~40 |
-| icp_misclassification | ~30 |
-| tone_drift | ~20 |
-| other categories | ~60 |
+| signal_over_claiming | 139 (primary training target) |
+| bench_over_commitment | 27 |
+| signal_reliability | 15 |
+| icp_misclassification | 13 |
+| tone_drift | 10 |
+| multi_thread_leakage | 8 |
+| dual_control | 8 |
+| gap_over_claiming | 6 |
+| scheduling_edge | 5 |
+| cost_pathology | 5 |
 
 **Are there labels?**  
 Yes. Each task has machine-verifiable labels: phrasing_tier (4-class), routed_to_human (bool), stale_disclosed (bool), thread_clean (bool).
@@ -151,7 +156,7 @@ Documentation for Responsible AI*
 
 ### Telescopic Overview
 
-Tenacious-Bench v0.1 is a 250-task, machine-verifiable evaluation benchmark for AI outbound
+Tenacious-Bench v0.1 is a 236-task, machine-verifiable evaluation benchmark for AI outbound
 sales agents, targeting confidence-calibrated phrasing decisions. It fills four gaps in
 τ²-Bench (retail domain) that are directly responsible for the highest-cost failure modes
 observed in the Week 10 Tenacious Conversion Engine: Signal Over-Claiming, Bench
@@ -161,10 +166,10 @@ Over-Commitment, Multi-Thread Leakage, and Stale-Signal Disclosure.
 
 | Attribute | Value |
 |---|---|
-| Total tasks (target) | 250 |
-| Train / Dev / Held_out split | 50% / 30% / 20% |
-| Authoring modes | Trace-derived (~30%), Programmatic (~30%), Multi-LLM synthesis (~25%), Adversarial (~15%) |
-| Primary failure category | Signal Over-Claiming (~40% of tasks) |
+| Total tasks (final) | 236 |
+| Train / Dev / Held_out split | 131 / 55 / 50 (55% / 23% / 21%) |
+| Authoring modes | Adversarial (35%), Multi-LLM synthesis (34%), Programmatic (16%), Trace-derived (14%) |
+| Primary failure category | Signal Over-Claiming (139/236 = 59% of tasks) |
 | Scoring dimensions | 4 (phrasing_tier, routed_to_human, stale_disclosed, thread_clean) |
 | Pass threshold | ≥0.60 weighted score |
 | Intended use | LoRA SFT training + A/B ablation on held_out split |

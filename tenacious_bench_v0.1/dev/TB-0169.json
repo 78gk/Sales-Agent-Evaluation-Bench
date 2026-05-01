@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "GreenEnergy Inc.",
+      "signals": {
+        "RFP_Issued": {
+          "conf": 0.85,
+          "value": "Request for Proposal in renewable energy sector",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "Internal Sales Contact"
+        },
+        "Social_Media_Post": {
+          "conf": 0.3,
+          "value": "CEO tweeted about exploring new energy solutions",
+          "age_days": 50,
+          "validity_window_days": 7,
+          "source": "Twitter"
+        }
+      }
+    },
+    "agent_prompt": "Evaluate the prospect's readiness to discuss a tailored energy solution based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0169",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

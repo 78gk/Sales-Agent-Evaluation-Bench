@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech Solutions",
+      "signals": {
+        "product_roadmap_discussion": {
+          "conf": 0.75,
+          "value": "Prospect mentioned considering a long-term partnership but not yet committed",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "sales_call"
+        },
+        "budget_allocation_review": {
+          "conf": 0.3,
+          "value": "Early-stage interest in budget planning, no concrete numbers shared",
+          "age_days": 5,
+          "validity_window_days": 7,
+          "source": "email_exchange"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's interest in a strategic partnership based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0162",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

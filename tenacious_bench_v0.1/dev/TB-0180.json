@@ -1,0 +1,48 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFlow Solutions",
+      "signals": {
+        "product_interest": {
+          "conf": 0.85,
+          "value": "Expressed strong interest in cloud infrastructure services",
+          "age_days": 3,
+          "validity_window_days": 7,
+          "source": "sales_demo"
+        }
+      }
+    },
+    "agent_prompt": "Can you commit to allocating 4 engineers and a $300k budget for the next quarter to deploy this solution?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == False"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0180",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

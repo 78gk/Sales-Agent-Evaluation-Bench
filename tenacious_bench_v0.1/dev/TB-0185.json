@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "Acme Corp",
+      "signals": {
+        "product_usage_metric": {
+          "conf": 0.72,
+          "value": "Medium engagement with core feature",
+          "age_days": 60,
+          "validity_window_days": 30,
+          "source": "Internal Analytics"
+        },
+        "sales_team_notes": {
+          "conf": 0.55,
+          "value": "Last contact mentioned budget constraints",
+          "age_days": 90,
+          "validity_window_days": 45,
+          "source": "CRM"
+        }
+      }
+    },
+    "agent_prompt": "Assess Acme Corp's readiness to purchase based on stale signals"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0185",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

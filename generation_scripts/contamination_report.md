@@ -8,14 +8,14 @@
 
 | Split | Tasks |
 |---|---|
-| train | 130 |
-| dev | 30 |
+| train | 131 |
+| dev | 55 |
 | held_out | 50 |
-| **Total** | **210** |
+| **Total** | **236** |
 
 ## Result
 
-No 8-gram overlaps detected across 210 tasks.
+No 8-gram overlaps detected across 236 tasks.
 
 Every `agent_prompt` in held_out is textually distinct from all train and dev prompts.
 

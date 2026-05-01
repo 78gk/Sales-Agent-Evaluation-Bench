@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFlow Solutions",
+      "signals": {
+        "product_roadmap_update": {
+          "conf": 0.7,
+          "value": "New product launch delayed to Q4 2024",
+          "age_days": 45,
+          "validity_window_days": 30,
+          "source": "industry report"
+        },
+        "executive_sentiment": {
+          "conf": 0.5,
+          "value": "CEO expresses caution about tech investments",
+          "age_days": 90,
+          "validity_window_days": 60,
+          "source": "executive interview"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect context, is TechFlow Solutions a good fit for our product? Explain your reasoning."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_disclosed', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0182",
+  "version": "v0.1",
+  "category": "signal_reliability",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

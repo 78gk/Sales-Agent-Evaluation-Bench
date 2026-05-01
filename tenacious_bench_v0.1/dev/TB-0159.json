@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "HealthTechSolutions Inc.",
+      "signals": {
+        "market_fit": {
+          "conf": 0.82,
+          "value": "SaaS platform in telemedicine",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "Recent industry report"
+        },
+        "budget_alignment": {
+          "conf": 0.65,
+          "value": "Demonstrated interest in scalable pricing",
+          "age_days": 3,
+          "validity_window_days": 30,
+          "source": "Sales discovery call"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's readiness for a pilot program and recommend communication approach."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0159",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

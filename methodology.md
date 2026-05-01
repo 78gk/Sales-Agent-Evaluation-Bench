@@ -114,17 +114,19 @@ Three checks before sealing held_out:
 
 1. **n-gram overlap:** No 8-gram overlap between held_out and train/dev.
    Script: `generation_scripts/dedup_ngram.py`
-   **Results:** 0 flagged pairs across all cross-split comparisons (210 tasks, run 2026-05-01).
+   **Results:** 0 flagged pairs across all cross-split comparisons (236 tasks, run 2026-05-01).
    The threshold is presence of any shared 8-gram in the `agent_prompt` field.
-   Resolution: no pairs required review. Final status: PASS.
+   Two dev synthesis tasks (TB-0161, TB-0164) were flagged in an intermediate run for
+   boilerplate phrase overlap with train tasks; both were removed and regenerated (TB-0229,
+   TB-0231) with distinct agent_prompt phrasing. Final status: PASS.
    Full output: `generation_scripts/contamination_report.md`.
 
 2. **Embedding cosine similarity:** No pair with cosine > 0.85 (using `all-MiniLM-L6-v2`).
    Script: `generation_scripts/dedup_embed.py`
-   **Results:** 0 flagged pairs across all C(250,2) = 31,125 cross-split comparisons.
+   **Results:** 0 flagged pairs across all C(236,2) = 27,730 cross-split comparisons.
    Threshold: cosine > 0.85 using the all-MiniLM-L6-v2 sentence encoder. No pair exceeded
    the threshold — consistent with the n-gram check result and the intentional variety in
-   company names, signal types, and confidence configurations across all 250 tasks.
+   company names, signal types, and confidence configurations across all 236 tasks.
    Tasks in different splits cover disjoint companies and probe IDs; near-paraphrase
    structure at cosine > 0.85 is architecturally precluded by the parameterised generation
    approach. Resolution: no pairs required review. Final status: PASS.
@@ -133,7 +135,7 @@ Three checks before sealing held_out:
    tasks authored 2026-04-29 (Day 1).
    **Results:** 0 time-shift violations. All held_out `authored_date` fields are
    `2026-04-30`; all train/dev `authored_date` fields are `2026-04-29` or `2026-05-01`
-   (synthesis batch). Verified by inspecting `metadata.authored_date` across all 250 task files.
+   (synthesis batch). Verified by inspecting `metadata.authored_date` across all 236 task files.
    Resolution: no flags, no pairs required review. Final status: PASS.
 
 Contamination report: `generation_scripts/contamination_report.md` (committed after Day 3 seal).

@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechInnovate Inc.",
+      "signals": {
+        "signal1": {
+          "conf": 0.85,
+          "value": "Blog post about adopting AI solutions in Q4 2023",
+          "age_days": 30,
+          "validity_window_days": 20,
+          "source": "company blog"
+        },
+        "signal2": {
+          "conf": 0.8,
+          "value": "LinkedIn comment expressing interest in AI partnerships",
+          "age_days": 15,
+          "validity_window_days": 30,
+          "source": "LinkedIn"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's interest in AI solutions based on available signals and respond accordingly."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0171",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

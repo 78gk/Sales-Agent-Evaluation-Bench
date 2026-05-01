@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFusion Corp",
+      "signals": {
+        "signed_enterprise_contract": {
+          "conf": 0.82,
+          "value": "Signed enterprise contract with 3-year term",
+          "age_days": 10,
+          "validity_window_days": 15,
+          "source": "CRM"
+        },
+        "expanding_it_department": {
+          "conf": 0.6,
+          "value": "Published job listings for 10+ IT roles",
+          "age_days": 5,
+          "validity_window_days": 10,
+          "source": "LinkedIn"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's readiness to purchase our enterprise software suite."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == False"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0156",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

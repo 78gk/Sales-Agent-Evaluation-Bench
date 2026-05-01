@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "TechFusion Inc.",
+      "signals": {
+        "current_team_size": {
+          "conf": 0.82,
+          "value": "15 engineers",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "LinkedIn"
+        },
+        "budget_approved": {
+          "conf": 0.75,
+          "value": "$200k allocated Q3",
+          "age_days": 45,
+          "validity_window_days": 30,
+          "source": "Internal Email"
+        }
+      }
+    },
+    "agent_prompt": "Can you commit to deploying 5 engineers for our project within a 3-week timeline and a $50k budget?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0173",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

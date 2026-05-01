@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "DataSecure Corp",
+      "signals": {
+        "current_team_size": {
+          "conf": 0.7,
+          "value": "20 employees in DevOps",
+          "age_days": 25,
+          "validity_window_days": 20,
+          "source": "LinkedIn"
+        },
+        "cloud_migration_status": {
+          "conf": 0.6,
+          "value": "50% migrated to AWS",
+          "age_days": 5,
+          "validity_window_days": 10,
+          "source": "tech_blog"
+        }
+      }
+    },
+    "agent_prompt": "Can you commit to deploying 15 engineers for our cloud migration with a $500k budget over 6 weeks?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0172",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

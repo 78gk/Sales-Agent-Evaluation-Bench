@@ -1,0 +1,48 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech Solutions",
+      "signals": {
+        "product_maturity": {
+          "conf": 0.65,
+          "value": "Early-stage product with limited market validation",
+          "age_days": 40,
+          "validity_window_days": 30,
+          "source": "Internal Product Review"
+        }
+      }
+    },
+    "agent_prompt": "Can you commit to allocating 3 engineers for this project over the next 5 weeks?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0176",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

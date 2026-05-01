@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech",
+      "signals": {
+        "signal_1": {
+          "conf": 0.85,
+          "value": "InnovateTech's CTO mentioned AI analytics as a priority in their Q4 strategy meeting.",
+          "age_days": 10,
+          "validity_window_days": 30,
+          "source": "internal strategy document"
+        },
+        "signal_2": {
+          "conf": 0.9,
+          "value": "InnovateTech has shortlisted our platform for a pilot program in the next quarter.",
+          "age_days": 5,
+          "validity_window_days": 20,
+          "source": "email communication"
+        },
+        "signal_3": {
+          "conf": 0.75,
+          "value": "BetaCorp, a competitor, has signed a deal with another vendor for similar analytics services.",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "public press release"
+        }
+      }
+    },
+    "agent_prompt": "Based on the prospect context, is InnovateTech interested in adopting our AI-powered analytics platform?"
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      },
+      {
+        "name": "thread_clean",
+        "weight": 0.4,
+        "check": "output.get('thread_clean', True) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0200",
+  "version": "v0.1",
+  "category": "multi_thread_leakage",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

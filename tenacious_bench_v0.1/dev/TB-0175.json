@@ -1,0 +1,55 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "CloudFlow Solutions",
+      "signals": {
+        "tech_stack": {
+          "conf": 0.9,
+          "value": "Using AWS Lambda and React.js",
+          "age_days": 5,
+          "validity_window_days": 30,
+          "source": "website"
+        },
+        "funding_status": {
+          "conf": 0.75,
+          "value": "$5M series B",
+          "age_days": 45,
+          "validity_window_days": 30,
+          "source": "crunchbase"
+        }
+      }
+    },
+    "agent_prompt": "Can you commit to deploying 3 engineers full-time for this integration project?"
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "routed_to_human",
+        "weight": 0.4,
+        "check": "output.get('routed_to_human', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0175",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

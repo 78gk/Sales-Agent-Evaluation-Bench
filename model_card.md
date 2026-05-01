@@ -31,7 +31,7 @@ The adapter teaches the base model to select the correct confidence-proportional
 | LoRA rank | 16 |
 | LoRA alpha | 32 |
 | Target modules | q_proj, v_proj |
-| Training pairs | 2,730 (130 tasks × 21x paraphrase augmentation) |
+| Training pairs | 2,751 (131 tasks × 21x paraphrase augmentation) |
 | Training epochs | 3 |
 | Effective batch size | 16 (batch=4 × grad_accum=4) |
 | Hardware | Google Colab T4 (16 GB) |
@@ -65,8 +65,8 @@ This adapter trains the phrasing-gate decision directly, using 2,625 ChatML pair
 ## Training Data
 
 **Dataset:** [Tenacious-Bench v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1)  
-**Split used for training:** `train` (130 tasks, primarily `signal_over_claiming` category)  
-**Augmentation:** 20x paraphrase rotation via `training/prepare_sft_data.py` (LIMA-style: only augmentations that preserve the correct phrasing tier are kept), producing 2,730 ChatML pairs  
+**Split used for training:** `train` (131 tasks, primarily `signal_over_claiming` category)  
+**Augmentation:** 20x paraphrase rotation via `training/prepare_sft_data.py` (LIMA-style: only augmentations that preserve the correct phrasing tier are kept), producing 2,751 ChatML pairs  
 **Format:** ChatML — system prompt specifies the phrasing gate rules; user turn provides prospect signals + task; assistant turn provides JSON with phrasing_tier and any required flags
 
 ---

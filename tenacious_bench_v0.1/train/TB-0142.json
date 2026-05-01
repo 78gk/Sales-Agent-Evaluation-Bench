@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "InnovateTech Solutions",
+      "signals": {
+        "signal_1": {
+          "conf": 0.82,
+          "value": "Launched AI-powered customer service platform",
+          "age_days": 5,
+          "validity_window_days": 30,
+          "source": "trusted_intel"
+        },
+        "signal_2": {
+          "conf": 0.75,
+          "value": "Entered partnership with cybersecurity firm",
+          "age_days": 20,
+          "validity_window_days": 15,
+          "source": "public_report"
+        },
+        "signal_3": {
+          "conf": 0.72,
+          "value": "Upgraded data center infrastructure",
+          "age_days": 10,
+          "validity_window_days": 20,
+          "source": "company_announcement"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's likelihood of proceeding with a major tech investment based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0142",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}

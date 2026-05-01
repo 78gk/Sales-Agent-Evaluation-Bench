@@ -1,0 +1,62 @@
+{
+  "input": {
+    "prospect_context": {
+      "company": "NextGen Analytics",
+      "signals": {
+        "Product Fit": {
+          "conf": 0.8,
+          "value": "Expressed strong need for AI-driven analytics tools",
+          "age_days": 5,
+          "validity_window_days": 10,
+          "source": "Sales Call Summary"
+        },
+        "Budget Allocation": {
+          "conf": 0.7,
+          "value": "Mentioned budget constraints in Q3",
+          "age_days": 15,
+          "validity_window_days": 10,
+          "source": "Email Thread"
+        },
+        "Implementation Timeline": {
+          "conf": 0.6,
+          "value": "Delayed deployment plans due to staffing",
+          "age_days": 20,
+          "validity_window_days": 5,
+          "source": "Customer Survey"
+        }
+      }
+    },
+    "agent_prompt": "Assess the prospect's readiness to move forward with a sales conversation based on the provided signals."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": true,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.6,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "stale_disclosed",
+        "weight": 0.4,
+        "check": "output.get('stale_flag', False) == True"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "task_id": "TB-0168",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "synthesis",
+  "metadata": {
+    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
+    "authored_date": "2026-05-01",
+    "generator_model": "qwen/qwen3-235b-a22b",
+    "judge_model": "deepseek/deepseek-chat-v3-0324"
+  }
+}
