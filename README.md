@@ -173,7 +173,7 @@ memo.pdf                    # 2-page executive interim report
 
 - **HuggingFace dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) _(pending staff sign-off)_
 - **HuggingFace model (LoRA adapter):** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora) ✅
-- **Blog post:** HF Community _(pending publish)_
+- **Blog post:** [HF Community — Building Tenacious-Bench](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1)
 - **GitHub:** [78gk/Sales-Agent-Evaluation-Bench](https://github.com/78gk/Sales-Agent-Evaluation-Bench)
 
 ---
