@@ -167,8 +167,8 @@ Over-Commitment, Multi-Thread Leakage, and Stale-Signal Disclosure.
 | Attribute | Value |
 |---|---|
 | Total tasks (final) | 236 |
-| Train / Dev / Held_out split | 131 / 55 / 50 (55% / 23% / 21%) |
-| Authoring modes | Adversarial (35%), Multi-LLM synthesis (34%), Programmatic (16%), Trace-derived (14%) |
+| Train / Dev / Held_out split | 131 / 55 / 50 (55% / 23% / 21%); target was 50/30/20 — dev is short of 30% target because synthesis admission rate (≈55% of candidates) yielded fewer tasks than projected |
+| Authoring modes | Adversarial (35%), Multi-LLM synthesis (34%), Programmatic (16%), Trace-derived (14%); original planned target was 30/30/25/15 — adversarial is over-represented because all 50 held_out tasks are adversarial (by design: held_out uses only hand-authored and programmatic tasks, no synthesis) |
 | Primary failure category | Signal Over-Claiming (139/236 = 59% of tasks) |
 | Scoring dimensions | 4 (phrasing_tier, routed_to_human, stale_disclosed, thread_clean) |
 | Pass threshold | ≥0.60 weighted score |

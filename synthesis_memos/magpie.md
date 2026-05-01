@@ -27,8 +27,8 @@ Yejin Choi, Bill Yuchen Lin
 ## How It Informs Tenacious-Bench
 
 Magpie's generator ≠ ground-truth assumption informs our decision to use a separate
-judge model. `generation_scripts/router_config.json` enforces that Qwen3-80B generates
-and DeepSeek V3.2 judges — the exact cross-model check Magpie lacks. Magpie's evidence
+judge model. `generation_scripts/router_config.json` enforces that Qwen3-235b-a22b generates
+and DeepSeek V3 (deepseek-chat-v3-0324) judges — the exact cross-model check Magpie lacks. Magpie's evidence
 that model-generated data produces diverse instructions also confirms the value of the
 synthesis source mode for Tenacious-Bench (Days 3–4, OpenRouter, 60 tasks planned).
 
@@ -61,8 +61,8 @@ encode this failure into the training data: the model would generate `assertive`
 as ground truth, and the quality filter — which checks instruction coherence, not tier
 correctness — would pass them. We would train the model *to over-claim*, not to calibrate.
 
-Our counter-design is the judge layer in `router_config.json`: DeepSeek V3.2 judges every
-Qwen3-80B-generated synthesis task on three dimensions, including `rubric_clarity` (is the
+Our counter-design is the judge layer in `router_config.json`: DeepSeek V3 (deepseek-chat-v3-0324) judges every
+Qwen3-235b-a22b-generated synthesis task on three dimensions, including `rubric_clarity` (is the
 expected tier clearly justified by the evidence?). A task where the model-generated
 "expected" tier is `assertive` but the signals show `conf=0.42` would fail
 `rubric_clarity` ≤ 2 and be discarded. Magpie's design has no analogue for this check.
