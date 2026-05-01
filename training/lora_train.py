@@ -158,10 +158,13 @@ def main():
         return {"text": text}
 
     train_ds = Dataset.from_list([{"conversations": p["messages"]} for p in train_pairs]).map(format_messages)
-    dev_ds   = Dataset.from_list([{"conversations": p["messages"]} for p in dev_pairs]).map(format_messages)
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Evaluation during training is disabled: the T4's 14.56 GiB VRAM is fully
+    # consumed by the 0.5B model + fp16 optimizer states + LoRA activations,
+    # leaving insufficient headroom for an eval forward pass. Real evaluation
+    # is performed by run_ablation.py on the sealed held_out split after training.
     shared_args = dict(
         output_dir=str(output_dir),
         num_train_epochs=NUM_EPOCHS,
@@ -173,12 +176,8 @@ def main():
         fp16=True,
         gradient_checkpointing=True,
         logging_steps=10,
-        eval_strategy="steps",
-        eval_steps=50,
-        save_strategy="steps",
-        save_steps=100,
-        load_best_model_at_end=True,
-        metric_for_best_model="eval_loss",
+        eval_strategy="no",
+        save_strategy="epoch",
         seed=RANDOM_SEED,
         report_to="none",
     )
@@ -216,7 +215,6 @@ def main():
         trainer_kwargs = dict(
             model=model,
             train_dataset=train_ds,
-            eval_dataset=dev_ds,
             args=trainer_args,
         )
         if "processing_class" in trainer_init:
@@ -234,7 +232,6 @@ def main():
             model=model,
             tokenizer=tokenizer,
             train_dataset=train_ds,
-            eval_dataset=dev_ds,
             dataset_text_field="text",
             max_seq_length=MAX_SEQ_LENGTH,
             args=training_args,
