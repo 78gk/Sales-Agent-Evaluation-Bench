@@ -129,13 +129,19 @@ def paired_bootstrap(scores_a: list, scores_b: list, n: int = 1000, seed: int = 
 # ---------------------------------------------------------------------------
 # Mock model runner (for dry-run and baseline simulation)
 # ---------------------------------------------------------------------------
+def _task_seed(task_id: str) -> int:
+    """Stable integer seed from any task_id format (TB-0001, TB-G013, etc.)."""
+    import hashlib
+    return int(hashlib.md5(task_id.encode()).hexdigest()[:8], 16)
+
+
 def mock_baseline_output(task: dict) -> dict:
     """
     Simulates the Week 10 baseline: randomly returns assertive on signal tasks
     at the empirically observed trigger rate (0.55 over-claiming rate).
     Used for Delta A baseline only when no real baseline model is available.
     """
-    rng = random.Random(int(task["task_id"].replace("TB-", "")) + RANDOM_SEED)
+    rng = random.Random(_task_seed(task["task_id"]) + RANDOM_SEED)
     expected_tier = task["expected"]["phrasing_tier"]
     # Simulate 55% over-claiming: return assertive even when expected is not
     if expected_tier != "assertive" and rng.random() < 0.55:
@@ -151,7 +157,7 @@ def mock_lora_output(task: dict) -> dict:
     Simulates an improved LoRA adapter: over-claiming rate reduced from 0.55 → 0.15.
     Used for Delta A LoRA side in dry-run.
     """
-    rng = random.Random(int(task["task_id"].replace("TB-", "")) + RANDOM_SEED + 1000)
+    rng = random.Random(_task_seed(task["task_id"]) + RANDOM_SEED + 1000)
     expected_tier = task["expected"]["phrasing_tier"]
     if expected_tier != "assertive" and rng.random() < 0.15:
         return {"phrasing_tier": "assertive",
@@ -166,7 +172,7 @@ def mock_prompt_only_output(task: dict) -> dict:
     Simulates prompt-engineered Qwen 3.5 (no training): over-claiming rate ~0.35.
     Used for Delta B in dry-run.
     """
-    rng = random.Random(int(task["task_id"].replace("TB-", "")) + RANDOM_SEED + 2000)
+    rng = random.Random(_task_seed(task["task_id"]) + RANDOM_SEED + 2000)
     expected_tier = task["expected"]["phrasing_tier"]
     if expected_tier != "assertive" and rng.random() < 0.35:
         return {"phrasing_tier": "assertive",
