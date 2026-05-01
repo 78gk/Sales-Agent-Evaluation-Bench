@@ -178,8 +178,61 @@ memo.pdf                    # 2-page executive interim report
 
 ---
 
+## Reproduce the Headline Number
+
+**Delta B +0.1046 (p=0.018)** — LoRA adapter vs prompt-only Qwen2.5-0.5B on sealed held-out.
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Pull the trained adapter from HuggingFace
+python -c "from huggingface_hub import snapshot_download; snapshot_download('kirutew17654321/tenacious-bench-qwen-lora', local_dir='training/checkpoint')"
+
+# 3. Run ablation on held_out (requires held_out/ partition — contact author)
+python training/run_ablation.py \
+    --held-out tenacious_bench_v0.1/held_out \
+    --adapter training/checkpoint \
+    --model qwen2.5-0.5b-instruct \
+    --output ablations/ablation_results.json
+
+# 4. Verify scoring evaluator
+python scoring_evaluator.py --validate
+# Expected: 3x OK + 2x PASS + 1x FAIL
+```
+
+---
+
 ## Running Costs
 
 See [cost_log.md](./cost_log.md). Hard cap: **$10 total**.  
 OpenRouter spent: ~$7.21 (synthesis generation via Qwen3-235B + DeepSeek V3).  
 Remaining: ~$2.79 (reserved for eval-tier calibration slice, Day 6).
+
+---
+
+## License
+
+- **Code** (scripts, evaluator, training): [Apache 2.0](./LICENSE)
+- **Dataset** (`tenacious_bench_v0.1/`): [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)
+- **LoRA adapter** (`kirutew17654321/tenacious-bench-qwen-lora`): Apache 2.0
+
+---
+
+## Attribution & Credits
+
+**Author:** Kirubel Tewodros — [kirubel@10academy.org](mailto:kirubel@10academy.org)  
+**Cohort:** 10 Academy TRP1, Week 11  
+**Program:** [10 Academy](https://10academy.org) Artificial Intelligence Mastery  
+
+**Built on:**
+- [Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct) — Alibaba DAMO Academy (Apache 2.0)
+- [PEFT](https://github.com/huggingface/peft) + [TRL](https://github.com/huggingface/trl) — HuggingFace (Apache 2.0)
+- [τ²-Bench](https://github.com/sierra-research/tau2-bench) — Sierra Research (evaluation baseline, CC-BY 4.0)
+- Synthesis pipeline: [Qwen3-235B](https://huggingface.co/Qwen/Qwen3-235B) (generator) + [DeepSeek V3](https://huggingface.co/deepseek-ai/DeepSeek-V3) (judge) via OpenRouter
+
+**Key papers cited:**
+- Zhou et al. (2023) — LIMA: Less Is More for Alignment
+- Lambert et al. (2024) — Tülu 3: Pushing Frontiers in Open Language Model Post-Training
+- Xu et al. (2024) — Magpie: Alignment Data Synthesis from Scratch
+- Li et al. (2025) — Preference Contamination in LLM-as-a-Judge Pipelines

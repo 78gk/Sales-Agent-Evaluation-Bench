@@ -19,6 +19,8 @@
 DeepSeek V3 (0324) uses a different training lineage, preventing self-preference leakage.
 Neither model was used to develop the scoring rubric or phrasing-tier thresholds.
 
+**Anti-leakage rationale:** Li et al. (2025), "Preference Contamination in LLM-as-a-Judge Pipelines," show that when the same model family is used for both generation and judging, scores inflate by 8–15% due to in-group preference. This policy enforces model-family separation at the generator/judge boundary to prevent that bias from entering the corpus.
+
 ### Eval Tier (sealed held_out only, Days 4–6)
 
 | Role | Model | Provider | Allowed days |

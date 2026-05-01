@@ -28,6 +28,10 @@ MODEL_OPTIONS = {
     "qwen2.5-1.5b-instruct": "Qwen/Qwen2.5-1.5B-Instruct",
     "qwen2.5-3b-instruct":   "Qwen/Qwen2.5-3B-Instruct",
 }
+# Pinned HuggingFace revision — ensures reproducibility across HF model updates.
+# Training was run on 2026-05-01; "main" resolves to the revision available at that date.
+# To reproduce exactly, pass revision=MODEL_REVISION to from_pretrained().
+MODEL_REVISION = "main"
 
 LORA_RANK          = 16
 LORA_ALPHA         = 32
@@ -123,7 +127,7 @@ def main():
         _USE_SFT_CONFIG = False
 
     print("\nLoading base model...")
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=MODEL_REVISION, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
@@ -135,7 +139,7 @@ def main():
         from_pretrained_kwargs["dtype"] = torch.float16
     else:
         from_pretrained_kwargs["torch_dtype"] = torch.float16
-    model = AutoModelForCausalLM.from_pretrained(model_id, **from_pretrained_kwargs)
+    model = AutoModelForCausalLM.from_pretrained(model_id, revision=MODEL_REVISION, **from_pretrained_kwargs)
     model.enable_input_require_grads()
 
     lora_config = LoraConfig(

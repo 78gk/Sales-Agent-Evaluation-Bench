@@ -33,6 +33,7 @@ Delta B is secondary (LoRA vs prompt-only, publishable regardless of sign).
 import json
 import random
 import sys
+import time
 from pathlib import Path
 
 RANDOM_SEED   = 42
@@ -306,8 +307,30 @@ def main():
                 tier = m.group(1) if m else "abstention"
                 return {"phrasing_tier": tier, "routed_to_human": False, "stale_flag": False}
 
+        # Cost-Pareto instrumentation: per-task latency, input tokens, output tokens.
+        # Local T4 inference costs $0.00/token; timing is reported for reproducibility.
+        per_task_costs = []
+
+        def timed_infer(task: dict, infer_fn) -> dict:
+            t0 = time.time()
+            signals = task["input"]["prospect_context"].get("signals", {})
+            prompt  = task["input"]["agent_prompt"]
+            user_msg = f"Prospect signals: {json.dumps(signals)}\n\nTask: {prompt}"
+            input_tokens = len(tokenizer.encode(user_msg))
+            output = infer_fn(task)
+            latency_ms = round((time.time() - t0) * 1000, 1)
+            output_tokens = len(tokenizer.encode(json.dumps(output)))
+            per_task_costs.append({
+                "task_id":      task["task_id"],
+                "latency_ms":   latency_ms,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "cost_usd":     0.0,  # local GPU inference — no API cost
+            })
+            return output
+
         print(f"Running LoRA inference on {len(tasks)} held-out tasks...")
-        lora_outputs     = [run_inference(t) for t in tasks]
+        lora_outputs     = [timed_infer(t, run_inference) for t in tasks]
         baseline_outputs = [mock_baseline_output(t) for t in tasks]
 
         # Delta B: prompt-only inference on the base model with the adapter disabled.
@@ -416,6 +439,31 @@ def main():
             "prompt_pass_at_1": round(prompt_pass_at_1, 4),
             "bootstrap": delta_b_stats,
             "fills_claim": "C-007",
+        },
+        # Delta C: τ²-Bench pass@1 = 0.8333 — informational reference only.
+        # Hard rule (CLAUDE.md): no τ²-Bench retail re-runs. The Week 10 result
+        # is a frozen baseline from the official 30-trial run (evidence_graph C-001).
+        "delta_c": {
+            "description": "τ²-Bench pass@1 = 0.8333 — informational reference, no re-run",
+            "tau2bench_pass_at_1": WEEK10_PASS_AT_1,
+            "source": "evidence_graph.json C-001 (Week 10 official 30-trial run)",
+            "note": "τ²-Bench measures retail task completion (tool calls + args). "
+                    "Tenacious-Bench measures confidence calibration. "
+                    "These are complementary dimensions; direct comparison is not meaningful.",
+            "re_run": False,
+        },
+        "cost_pareto": {
+            "description": "Per-task latency and token counts for local T4 GPU inference",
+            "hardware": "Google Colab T4 (16 GB VRAM)",
+            "cost_usd_per_token": 0.0,
+            "per_task": per_task_costs if not args.dry_run else [],
+            "aggregate": {
+                "n_tasks": len(per_task_costs),
+                "total_input_tokens":  sum(r["input_tokens"]  for r in per_task_costs),
+                "total_output_tokens": sum(r["output_tokens"] for r in per_task_costs),
+                "mean_latency_ms":     round(sum(r["latency_ms"] for r in per_task_costs) / max(len(per_task_costs), 1), 1),
+                "total_cost_usd":      0.0,
+            } if per_task_costs else {},
         },
         "seed": RANDOM_SEED,
         "bootstrap_n": BOOTSTRAP_N,

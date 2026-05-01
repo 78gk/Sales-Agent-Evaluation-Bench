@@ -101,6 +101,40 @@ def write_report(overlaps: list, stats: dict) -> None:
     print(f"Report written to {out}")
 
 
+def check_time_shift() -> list:
+    """
+    Time-shift verification: for every task, inspect each signal's age_days
+    vs its validity_window_days. If age_days > validity_window_days the signal
+    is stale; verify that expected.stale_disclosed == True.
+
+    Signal-window provenance is documented in seeds/target_failure_mode.md:
+      - funding events: 180-day validity window
+      - job postings: 60-day validity window
+      - leadership signals: 90-day validity window
+
+    Returns a list of (task_id, split, signal_key, age_days, window) violations.
+    """
+    violations = []
+    for split_name, files in SPLITS.items():
+        for f in files:
+            task = json.loads(f.read_text(encoding="utf-8"))
+            tid = task["task_id"]
+            signals = task["input"]["prospect_context"].get("signals", {})
+            stale_expected = task["expected"].get("stale_disclosed", False)
+            has_stale_signal = False
+            for sig_key, sig_val in signals.items():
+                if not isinstance(sig_val, dict):
+                    continue
+                age = sig_val.get("age_days")
+                window = sig_val.get("validity_window_days")
+                if age is not None and window is not None and age > window:
+                    has_stale_signal = True
+            # If any signal is stale, stale_disclosed must be True in expected
+            if has_stale_signal and not stale_expected:
+                violations.append((tid, split_name, "stale_signal_undisclosed"))
+    return violations
+
+
 def main():
     overlaps, stats = run()
     total = sum(stats.values())
@@ -112,6 +146,14 @@ def main():
     else:
         print(f"PASS: No 8-gram overlaps across {total} tasks "
               f"(train={stats['train']}, dev={stats['dev']}, held_out={stats['held_out']}).")
+
+    ts_violations = check_time_shift()
+    if ts_violations:
+        print(f"TIME-SHIFT WARN: {len(ts_violations)} tasks have stale signals without stale_disclosed=True:")
+        for v in ts_violations[:10]:
+            print(f"  {v[0]} ({v[1]}): {v[2]}")
+    else:
+        print("TIME-SHIFT PASS: All stale signals correctly flagged in expected.stale_disclosed.")
 
     write_report(overlaps, stats)
     sys.exit(1 if overlaps else 0)
