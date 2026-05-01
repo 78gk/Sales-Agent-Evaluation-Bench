@@ -10,7 +10,7 @@
 
 ### Summary
 
-We built **Tenacious-Bench v0.1**, a 250-task evaluation benchmark for an AI outbound sales agent (the Tenacious Conversion Engine), and discovered four structural gaps where τ²-Bench's grading mechanism cannot distinguish correct from incorrect agent behavior. This issue documents those gaps with specific probe IDs and trace evidence, and links to our open-source benchmark and LoRA adapter as a concrete proposed extension.
+We built **Tenacious-Bench v0.1**, a 236-task evaluation benchmark for an AI outbound sales agent (the Tenacious Conversion Engine), and discovered four structural gaps where τ²-Bench's grading mechanism cannot distinguish correct from incorrect agent behavior. This issue documents those gaps with specific probe IDs and trace evidence, and links to our open-source benchmark and LoRA adapter as a concrete proposed extension.
 
 ### Background
 
@@ -54,7 +54,7 @@ We built **Tenacious-Bench v0.1**, a 250-task evaluation benchmark for an AI out
 
 ### Our Contribution
 
-We open-sourced a 250-task benchmark and LoRA adapter addressing Gap 1 directly:
+We open-sourced a 236-task benchmark and LoRA adapter addressing Gap 1 directly:
 
 - **Dataset:** [Tenacious-Bench v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) — CC-BY-4.0
 - **Model:** [tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora) — Apache 2.0
