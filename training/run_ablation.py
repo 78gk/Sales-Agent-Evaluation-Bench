@@ -216,18 +216,34 @@ def main():
         baseline_outputs = [mock_baseline_output(t)    for t in tasks]
         prompt_outputs   = [mock_prompt_only_output(t) for t in tasks]
     else:
-        # Real model inference — requires trained adapter and GPU
-        print("\nLoading model and adapter for inference...")
-        try:
-            from unsloth import FastLanguageModel
-        except ImportError:
-            print("ERROR: unsloth not installed. Use --dry-run for pipeline test.")
-            sys.exit(1)
+        # Real model inference — standard transformers + PEFT, no unsloth.
+        import inspect
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from peft import PeftModel
 
-        model, tokenizer = FastLanguageModel.from_pretrained(
-            args.adapter, max_seq_length=2048, dtype=None, load_in_4bit=False
-        )
-        FastLanguageModel.for_inference(model)
+        base_model_id = {
+            "qwen2.5-0.5b-instruct": "Qwen/Qwen2.5-0.5B-Instruct",
+            "qwen2.5-1.5b-instruct": "Qwen/Qwen2.5-1.5B-Instruct",
+            "qwen2.5-3b-instruct":   "Qwen/Qwen2.5-3B-Instruct",
+        }.get(args.model, "Qwen/Qwen2.5-0.5B-Instruct")
+
+        # transformers >= 4.50 deprecated `torch_dtype` for `dtype`.
+        _from_pretrained_kwargs = dict(device_map="auto", trust_remote_code=True)
+        _auto_params = inspect.signature(AutoModelForCausalLM.from_pretrained).parameters
+        if "dtype" in _auto_params:
+            _from_pretrained_kwargs["dtype"] = torch.float16
+        else:
+            _from_pretrained_kwargs["torch_dtype"] = torch.float16
+
+        print(f"\nLoading base model {base_model_id} and adapter {args.adapter}...")
+        tokenizer = AutoTokenizer.from_pretrained(args.adapter, trust_remote_code=True)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+
+        base_model = AutoModelForCausalLM.from_pretrained(base_model_id, **_from_pretrained_kwargs)
+        model = PeftModel.from_pretrained(base_model, args.adapter)
+        model.eval()
 
         SYSTEM_PROMPT = (
             "You are the Tenacious Conversion Engine phrasing gate.\n\n"
@@ -260,7 +276,7 @@ def main():
             )
             inputs = tokenizer(formatted, return_tensors="pt").to(model.device)
 
-            with __import__("torch").no_grad():
+            with torch.no_grad():
                 output_ids = model.generate(
                     **inputs,
                     max_new_tokens=128,
@@ -288,19 +304,12 @@ def main():
         lora_outputs     = [run_inference(t) for t in tasks]
         baseline_outputs = [mock_baseline_output(t) for t in tasks]
 
-        # Delta B: real prompt-only inference on base model (no LoRA adapter)
-        print("Loading base model (no adapter) for prompt-only baseline...")
-        base_model_id = {
-            "qwen2.5-0.5b-instruct": "Qwen/Qwen2.5-0.5B-Instruct",
-            "qwen2.5-1.5b-instruct": "Qwen/Qwen2.5-1.5B-Instruct",
-        }.get(args.model, "Qwen/Qwen2.5-0.5B-Instruct")
-        base_model, base_tokenizer = FastLanguageModel.from_pretrained(
-            base_model_id, max_seq_length=2048, dtype=None, load_in_4bit=False
-        )
-        FastLanguageModel.for_inference(base_model)
+        # Delta B: prompt-only inference on the base model with the adapter disabled.
+        # Reuses the same loaded weights via PeftModel.disable_adapter() — no second load.
+        print("Running prompt-only baseline (adapter disabled) on the same model...")
 
         def run_inference_base(task: dict) -> dict:
-            """Run a single task through the base model (no LoRA) with the phrasing-gate prompt."""
+            """Run a single task through the base model (LoRA disabled) with the phrasing-gate prompt."""
             import json as _json
             import re as _re
             signals  = task["input"]["prospect_context"].get("signals", {})
@@ -310,17 +319,17 @@ def main():
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user",   "content": user_msg},
             ]
-            formatted = base_tokenizer.apply_chat_template(
+            formatted = tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
-            inputs = base_tokenizer(formatted, return_tensors="pt").to(base_model.device)
-            with __import__("torch").no_grad():
-                output_ids = base_model.generate(
+            inputs = tokenizer(formatted, return_tensors="pt").to(model.device)
+            with model.disable_adapter(), torch.no_grad():
+                output_ids = model.generate(
                     **inputs, max_new_tokens=128, temperature=0.0,
-                    do_sample=False, pad_token_id=base_tokenizer.eos_token_id,
+                    do_sample=False, pad_token_id=tokenizer.eos_token_id,
                 )
             new_tokens = output_ids[0][inputs["input_ids"].shape[1]:]
-            raw = base_tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
+            raw = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
             raw = _re.sub(r"^```json?\s*", "", raw)
             raw = _re.sub(r"\s*```$", "", raw)
             try:

@@ -108,17 +108,18 @@ def main():
         print("\n[DRY RUN] Exiting without training.")
         return
 
+    import inspect
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
     from peft import LoraConfig, get_peft_model, TaskType
     from datasets import Dataset
 
-    # trl >= 0.10 moved max_seq_length into SFTConfig; fall back to old API
     try:
         from trl import SFTTrainer, SFTConfig as _SFTConfig
         _USE_SFT_CONFIG = True
     except ImportError:
         from trl import SFTTrainer
+        _SFTConfig = None
         _USE_SFT_CONFIG = False
 
     print("\nLoading base model...")
@@ -127,14 +128,15 @@ def main():
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=torch.float16,
-        device_map="auto",
-        trust_remote_code=True,
-    )
+    # transformers >= 4.50 deprecated `torch_dtype` in favor of `dtype`.
+    from_pretrained_kwargs = dict(device_map="auto", trust_remote_code=True)
+    auto_params = inspect.signature(AutoModelForCausalLM.from_pretrained).parameters
+    if "dtype" in auto_params:
+        from_pretrained_kwargs["dtype"] = torch.float16
+    else:
+        from_pretrained_kwargs["torch_dtype"] = torch.float16
+    model = AutoModelForCausalLM.from_pretrained(model_id, **from_pretrained_kwargs)
     model.enable_input_require_grads()
-    model.gradient_checkpointing_enable()
 
     lora_config = LoraConfig(
         r=LORA_RANK,
@@ -169,6 +171,7 @@ def main():
         lr_scheduler_type="cosine",
         warmup_steps=WARMUP_STEPS,
         fp16=True,
+        gradient_checkpointing=True,
         logging_steps=10,
         eval_strategy="steps",
         eval_steps=50,
@@ -180,21 +183,48 @@ def main():
         report_to="none",
     )
 
+    def _filter_kwargs(target_cls, kwargs):
+        sig = inspect.signature(target_cls.__init__).parameters
+        accepted, dropped = {}, []
+        for k, v in kwargs.items():
+            if k in sig:
+                accepted[k] = v
+            else:
+                dropped.append(k)
+        return accepted, dropped
+
     if _USE_SFT_CONFIG:
-        trainer_args = _SFTConfig(
-            **shared_args,
-            max_seq_length=MAX_SEQ_LENGTH,
-            dataset_text_field="text",
-        )
-        trainer = SFTTrainer(
+        cfg_params = inspect.signature(_SFTConfig.__init__).parameters
+        cfg_kwargs = dict(shared_args)
+        # `eval_strategy` was renamed in some transformers versions; keep both names available.
+        if "eval_strategy" not in cfg_params and "evaluation_strategy" in cfg_params:
+            cfg_kwargs["evaluation_strategy"] = cfg_kwargs.pop("eval_strategy")
+        # `max_seq_length` (trl <0.21) → `max_length` (trl >=0.21).
+        if "max_seq_length" in cfg_params:
+            cfg_kwargs["max_seq_length"] = MAX_SEQ_LENGTH
+        elif "max_length" in cfg_params:
+            cfg_kwargs["max_length"] = MAX_SEQ_LENGTH
+        if "dataset_text_field" in cfg_params:
+            cfg_kwargs["dataset_text_field"] = "text"
+        cfg_kwargs, dropped = _filter_kwargs(_SFTConfig, cfg_kwargs)
+        if dropped:
+            print(f"  [info] dropped unsupported SFTConfig kwargs: {dropped}")
+        trainer_args = _SFTConfig(**cfg_kwargs)
+
+        # trl >=0.13 renamed SFTTrainer's `tokenizer` arg to `processing_class`.
+        trainer_init = inspect.signature(SFTTrainer.__init__).parameters
+        trainer_kwargs = dict(
             model=model,
-            tokenizer=tokenizer,
             train_dataset=train_ds,
             eval_dataset=dev_ds,
             args=trainer_args,
         )
+        if "processing_class" in trainer_init:
+            trainer_kwargs["processing_class"] = tokenizer
+        elif "tokenizer" in trainer_init:
+            trainer_kwargs["tokenizer"] = tokenizer
+        trainer = SFTTrainer(**trainer_kwargs)
     else:
-        # trl < 0.10 — eval_strategy may not exist yet
         try:
             training_args = TrainingArguments(**shared_args)
         except TypeError:
