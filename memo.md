@@ -12,7 +12,16 @@ date: "2026-04-30"
 
 ## Executive Summary
 
-On 62 sealed held-out tasks spanning 10 failure categories, the LoRA adapter (Qwen2.5-0.5B-Instruct, rank=16, Path A SFT on 3,003 phrasing-gate pairs) achieved Delta A of **−0.2783 (95% CI [−0.405, −0.136], paired bootstrap n=1,000, p<0.001)** versus the Week 10 agent baseline, while Delta B — the same adapter versus un-trained base model with identical phrasing-gate prompt — was **+0.1046 (95% CI [+0.009, +0.205], p=0.018)**, confirming statistically significant confidence-calibration improvement over the prompt-only baseline at $0.00 additional per-task inference cost. Delta A is negative because the Week 10 baseline operates at oracle-level quality on a different benchmark (τ²-Bench pass@1=0.8333); the adapter's contribution is measured by Delta B, which isolates the SFT training signal on the same backbone, same prompt, same evaluation tasks — and the positive lift is honest. We recommend **deploy with caveat**: ship the adapter to production behind a 14-day reply-rate monitor gated at the Delta B CI lower bound (0.2258 + 0.009 = **0.2347** floor), with automatic rollback if production reply-rate drops below that floor for 7 consecutive days — justified by a Signal Over-Claiming annual pipeline cost of ~$2.40M per 1,000 touches [C-004] that makes even the minimum defensible lift (+0.9 ppt) worth protecting.
+On 62 sealed held-out tasks, the LoRA adapter (Qwen2.5-0.5B-Instruct, rank-16 SFT) achieved **Delta A = −0.2783** (95% CI [−0.405, −0.136], paired bootstrap n=1,000, p<0.001) versus the Week 10 baseline — negative and expected, as that baseline is an oracle-quality system scored on a different benchmark. The operationally meaningful comparison is **Delta B = +0.1046** (95% CI [+0.009, +0.205], p=0.018): trained adapter versus un-trained base model on the same Qwen2.5-0.5B backbone with the same phrasing-gate prompt, confirming statistically significant confidence-calibration improvement. We recommend **deploy with caveat** — ship behind a 14-day reply-rate monitor gated at **0.2347** (prompt-only baseline 0.2258 + CI lower bound 0.009), with automatic rollback if breached for 7 consecutive days, justified by a Signal Over-Claiming pipeline cost of ~$2.40M/yr per 1,000 touches [C-004].
+
+### Page 1 — Cost & Latency Delta
+
+| | With adapter | Without adapter (prompt-only) | Delta |
+|---|---|---|---|
+| **Cost / task** | $0.00 | $0.00 | **$0.00** |
+| **Latency / task** | ~320 ms | ~310 ms | **~10 ms** |
+
+Both conditions run on a T4 16 GB GPU with zero external API calls. Latency measured as median wall-clock per-task inference time (greedy decode, max_new_tokens=256) across the 62 held-out tasks. The $0.00 cost delta and negligible ~10 ms latency overhead remove cost and speed as gating factors for the production recommendation above.
 
 ---
 
