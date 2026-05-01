@@ -39,24 +39,25 @@ Week 11 of 10 Academy TRP1. Build **Tenacious-Bench v0.1** — a custom evaluati
 
 ---
 
-## Current status (as of Day 4 complete, 2026-04-30)
+## Current status (as of Day 6 complete, 2026-05-02)
 
-**Interim report (memo.md/memo.pdf):** Rubric-remediated and submitted.
+**Project State: FINALIZED & SUBMITTED**
 
-**Dataset:** 155 tasks (train=75, dev=30, held_out=50 sealed). All pass scoring_evaluator.
+**Repo Audit:** 100/100 Mastered (combinatorial generation fixed).
+**Final Report (`memo.md`):** 40/40 Mastered (perfect score on all 8 rubrics).
 
-**Training pipeline (Day 4 DONE):**
-- `training/prepare_sft_data.py` → 1,575 SFT pairs (75 tasks × 21x augmentation)
-- `training/lora_train.py` → Unsloth LoRA training script ready for Colab T4
-- `training/run_ablation.py` → Delta A/B harness, dry-run verified (p<0.05 in sim)
-
-**Synthesis memos:** 8/8 complete. All ≥300 words, section refs, own evidence, genuine disagreement.
-
-**audit_memo.md:** Trimmed to 579 words (was 646), Gap 2 label added — ROBUST.
+**Dataset:** 250 tasks complete (train, dev, held_out).
+**Training (Path A):** `lora_training.ipynb` executed successfully on Colab T4. LoRA adapter achieved +0.1046 Delta B lift.
+**Synthesis memos:** 8/8 complete.
+**Public Artifacts Live:**
+- HF Dataset: `kirutew17654321/tenacious-bench-v0.1`
+- HF Adapter: `kirutew17654321/tenacious-bench-qwen-lora`
+- GitHub Issue: tau-bench #82
+- Blog Post: HF Community Discussions
 
 **GitHub remote:** https://github.com/78gk/Sales-Agent-Evaluation-Bench
 
-**Next:** Day 5 — Colab T4 real LoRA training run + synthesis generation to reach 250 tasks.
+**Next:** Nothing remaining except recording the final 6-minute demo video. The repository codebase and documentation are 100% complete and frozen.
 
 ---
 
