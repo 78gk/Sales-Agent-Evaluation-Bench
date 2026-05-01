@@ -122,8 +122,8 @@ memo.pdf                    # 2-page executive interim report
 | Datasheet | ✅ Gebru 7-section + Pushkarna 3-layer |
 | Methodology | ✅ Path A argued (cause→inference→conclusion), 50/30/20 protocol |
 | HuggingFace model (LoRA adapter) | ✅ kirutew17654321/tenacious-bench-qwen-lora |
-| HuggingFace dataset push | ⏳ Pending staff sign-off |
-| Blog post | ⏳ Ready — pending HF Community publish |
+| HuggingFace dataset push | ✅ Live — kirutew17654321/tenacious-bench-v0.1 |
+| Blog post | ✅ Live — HF Community discussions/1 |
 
 ---
 
@@ -161,17 +161,17 @@ memo.pdf                    # 2-page executive interim report
 
 | Item | Status |
 |---|---|
-| Full 260-task dataset on HuggingFace (CC-BY-4.0) | ⏳ Pending staff sign-off |
+| Full 260-task dataset on HuggingFace (CC-BY-4.0) | ✅ kirutew17654321/tenacious-bench-v0.1 |
 | LoRA adapter on HuggingFace | ✅ kirutew17654321/tenacious-bench-qwen-lora |
-| Blog post (HF Community) | ⏳ Pending HF Community publish |
-| τ²-Bench GitHub issue — community engagement | ⏳ Pending post |
+| Blog post (HF Community) | ✅ Live — discussions/1 |
+| τ²-Bench GitHub issue — community engagement | ✅ sierra-research/tau-bench/issues/82 |
 | Demo video (≤6 min) | ⏳ Pending |
 
 ---
 
 ## Public Artifacts (populated at final submission)
 
-- **HuggingFace dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) _(pending staff sign-off)_
+- **HuggingFace dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) ✅
 - **HuggingFace model (LoRA adapter):** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora) ✅
 - **Blog post:** [HF Community — Building Tenacious-Bench](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1)
 - **Community engagement:** [τ²-Bench GitHub issue #82](https://github.com/sierra-research/tau-bench/issues/82)

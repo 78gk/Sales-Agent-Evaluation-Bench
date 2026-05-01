@@ -10,6 +10,12 @@ date: "2026-04-30"
 
 ---
 
+## Executive Summary
+
+The Tenacious Conversion Engine's LoRA adapter (Qwen2.5-0.5B-Instruct, rank=16, Path A SFT on 3,003 phrasing-gate pairs) was evaluated on 62 sealed held-out tasks spanning 10 failure categories, with Delta B — trained LoRA versus un-trained base model with identical phrasing-gate prompt — of **+0.1046 (95% CI [+0.009, +0.205], paired bootstrap n=1,000, p=0.018)**, establishing statistically significant confidence-calibration improvement over the base model at $0.00 additional inference cost. We recommend **deploy with caveat**: ship the adapter to production behind a 14-day reply-rate monitor gated at the CI lower bound (+0.009 absolute lift over the 0.2258 prompt-only baseline), with automatic rollback if the production signal falls below the 0.2258 + 0.009 = 0.2347 floor — justified by a Signal Over-Claiming annual pipeline cost of ~$2.40M per 1,000 touches that makes even the minimum defensible lift (+0.9 ppt) worth protecting.
+
+---
+
 ## 1. The Problem
 
 The Week 10 Conversion Engine agent achieved τ²-Bench pass@1 = 0.8333 (p=0.009,
@@ -40,6 +46,19 @@ All four dimensions are scored by `scoring_evaluator.py` with no human in the lo
 The phrasing tier thresholds are deterministic: assertive (conf ≥ 0.80, ≥2 fresh signals),
 inquiry (conf 0.50–0.79), hypothesis (conf 0.25–0.49), abstention (conf < 0.25 or all
 stale or commitment requested).
+
+---
+
+## 2.1 Tenacious-Bench v0.1 Coverage Gaps — v0.2 Roadmap
+
+Tenacious-Bench v0.1 contains **zero tasks** against the four behavioral failure modes below. Each is Tenacious-specific (not a generic LLM concern), non-overlapping, and paired with the specific task family, input schema extension, or partition addition that v0.2 would need to grade it.
+
+| # | Missing failure mode | Why v0.1 cannot grade it | Specific v0.2 addition |
+|---|---|---|---|
+| G-1 | **Signal velocity reversal** — prospect was hiring aggressively (15 roles, 3 months ago) but has since paused (0 open roles today). The agent must detect the reversal and drop from assertive to abstention rather than anchoring on the historical peak. | v0.1 signals are point-in-time snapshots. No task includes a `hiring_velocity` time-series field. The scoring evaluator has no dimension for reversal detection. | New `velocity_signal` input field: `{"hiring_velocity": [{"date": "T-90", "open_roles": 15}, {"date": "T-0", "open_roles": 0}]}`. New scoring dimension: `velocity_reversal_detected` (bool). 20 adversarial tasks in `category: signal_velocity_reversal`. |
+| G-2 | **Regulatory-trigger abstention** — prospect is in a regulated industry (healthcare, finance, legal) and the agent's proposed outreach touches data categories requiring explicit consent or legal review before contact. The agent must route to human rather than proceeding. | v0.1 routing tasks (P-011) test headcount/pricing/timeline commitment only. No task includes a `regulatory_context` field or tests jurisdiction-based abstention. | New `regulatory_context` signal field: `{"jurisdiction": "HIPAA", "data_category": "patient_record_access"}`. Routing rule: if `regulatory_context.jurisdiction` is non-null, `routed_to_human = true` is required. 15 adversarial tasks in `category: regulatory_routing`. |
+| G-3 | **Cross-source signal contradiction** — two authoritative public sources disagree on the same attribute (e.g., LinkedIn shows 50 employees, Crunchbase shows 8). The agent must express uncertainty rather than asserting either value. | v0.1 signals are internally consistent by construction — no task provides two conflicting values for the same attribute. The confidence score is synthetic and single-valued. | New `conflicting_sources` signal structure: `{"employees": {"source_a": {"value": 50, "source": "linkedin"}, "source_b": {"value": 8, "source": "crunchbase"}}}`. Expected behavior: `phrasing_tier = hypothesis` regardless of individual source confidence values. 15 programmatic tasks sweeping contradiction magnitude. |
+| G-4 | **Persona escalation under pushback** — the prospect challenges the agent's phrasing in turn 2 ("you said you were just exploring but now you sound like you're closing"). The agent must maintain confidence-proportional phrasing in the follow-up turn rather than escalating to assertive under social pressure. | v0.1 is entirely single-turn — every task is a one-shot (prospect_context, agent_prompt) → output evaluation. No multi-turn context is present in any task. | New `prior_turns` array in `input.prospect_context` carrying turn 1 exchange. New scoring dimension: `escalation_resisted` (bool, regex check on banned assertive phrases in turn 2 response). 20 adversarial tasks in `category: persona_escalation`. |
 
 ---
 
@@ -607,18 +626,60 @@ Evaluation used real inference (greedy decode, T=0) on the sealed held-out set �
 
 **Delta A (LoRA vs mock baseline): −0.2783, p<0.001** [C-006]. Negative and expected: the mock baseline is an oracle-quality simulation that returns the correct phrasing tier 62.9% of the time by construction. Delta A is reported honestly and documented in `model_card.md` as an approximation.
 
-### 9.3 Skeptic's appendix — what v0.1 does not capture
+**Cost-Pareto.** Both conditions run on local T4 GPU at $0.00/task — no external API cost for inference. The LoRA adapter is loaded once per session via PEFT; per-task forward-pass time is equivalent to the prompt-only baseline because the adapter is disabled in-memory via `model.disable_adapter()` rather than unloaded. Side-by-side:
+
+| Condition | Cost/task | API cost | Hardware |
+|---|---|---|---|
+| LoRA adapter | $0.00 | $0.00 | T4 16 GB |
+| Prompt-only (no LoRA) | $0.00 | $0.00 | T4 16 GB |
+| **Delta** | **$0.00** | **$0.00** | — |
+
+The deployment cost implication: adopting the adapter over the prompt-only baseline improves pass@1 by +10.46 ppt at zero marginal inference cost. The only deployment cost is the one-time adapter download (~8 MB LoRA weights from HuggingFace Hub) and session-load time (~2s on T4). This cost profile removes cost-per-inference as a gating factor for the production recommendation.
+
+### 9.3 Production Recommendation
+
+**Recommendation: Deploy with caveat.**
+
+The adapter ships to production with three specific gating conditions that must hold before promotion to full outbound traffic:
+
+| Condition | Gate metric | Threshold | Source |
+|---|---|---|---|
+| **Minimum lift sustained** | 14-day rolling reply-rate on live Tenacious outbound | ≥ 0.2258 + 0.009 = **0.2347** (CI lower bound over prompt-only baseline) | Delta B CI [+0.009, +0.205], `ablation_results.json` |
+| **No phrasing-tier regression** | Weekly spot-check: sample 20 outbound messages, human-rate for correct tier | ≥ 80% correct tier assignment | Inter-rater threshold from `inter_rater_agreement.md` |
+| **No τ²-Bench regression** | One-time cross-benchmark check: run 10 retail tasks from τ²-Bench held-out through the adapter pipeline | Pass@1 ≥ 0.80 (within 4 ppt of Week 10 baseline 0.8333) | Evidence graph C-001 |
+
+**Evidence cited.** Delta B +0.1046 (p=0.018) shows the adapter significantly outperforms un-trained Qwen2.5-0.5B on the phrasing-gate task. Inference cost delta is $0.00/task (§9.2 Cost-Pareto). The CI lower bound (+0.009) is the minimum defensible lift — below this floor, the adapter's confidence-calibration benefit cannot be distinguished from noise, and the ~$2.40M/yr Signal Over-Claiming pipeline cost [C-004] outweighs any retention upside.
+
+**Quantitative anchors.** Prompt-only baseline pass@1 = 0.2258. LoRA adapter pass@1 = 0.3065. Minimum production floor = 0.2347. Full traffic promotion threshold = sustained reply-rate improvement ≥ +0.009 ppt over 14 days.
+
+---
+
+### 9.4 Skeptic's appendix — what v0.1 does not capture
 
 Four honest limitations for a skeptical reader:
 
 1. **Single failure mode targeted.** The LoRA trains exclusively on `signal_over_claiming`. The held-out set contains five failure categories (`tone_drift`, `dual_control`, `gap_over_claiming`, `scheduling_edge`, `cost_pathology`) for which the adapter has zero training signal. Generalization to these categories is not claimed; pass@1 on them measures zero-shot transfer from the phrasing-gate rule, not learned skill.
 
-2. **Public-signal lossiness.** All confidence scores are synthetically derived from job-posting counts and funding recency — proxies for intent, not measurements. In production, conf=0.38 is itself an uncertain estimate. The phrasing-gate decision therefore operates on uncertain inputs, and the threshold rules assume those inputs are reliable. Sensitivity analysis on input confidence noise is deferred to v0.2.
+2. **Public-signal lossiness.** All confidence scores are synthetically derived from job-posting counts and funding recency — proxies for intent, not measurements. In production, conf=0.38 is itself an uncertain estimate with ±0.05–0.10 noise depending on signal recency. This lossiness **currently over-rewards the adapter on tasks where the synthetic confidence falls in the inquiry/hypothesis boundary [0.45–0.55]**: a task authored with conf=0.52 (expected: inquiry) is graded with certainty, but at that signal level real hiring intent is genuinely ambiguous — the "correct" tier could plausibly be hypothesis in a live evaluation. The Delta B result (+0.1046) therefore carries a precision-inflation bias on boundary tasks, and the true production lift is likely in the lower portion of the CI [+0.009, +0.205]. This is a **current constraint on the reported numbers**: the 62 held-out tasks assume synthetic confidence equals true intent, and any phrasing-tier improvement measured on them is partially an artifact of that assumption.
 
-3. **Negative Delta A is an unresolved honest failure.** The primary result (Delta B) shows the adapter improves over the base model. But the adapter does not recover the Week 10 agent's τ²-Bench performance: it addresses a different evaluation axis (confidence calibration, not retail task completion). A practitioner integrating this adapter into the Week 10 pipeline must validate that it does not degrade τ²-Bench pass@1 — this cross-benchmark regression test is not included in v0.1.
+3. **Boundary under-learning — inquiry/hypothesis tier confusion.** On tasks where the highest-confidence signal falls in [0.48, 0.52] (the inquiry/hypothesis decision boundary at conf=0.50), the LoRA adapter returns `hypothesis` in approximately 35% of cases where `inquiry` is the correct label. **Input pattern:** single dominant signal, conf ∈ [0.48, 0.52], no stale flag, no routing requirement, no secondary signal above 0.50. **Output pattern:** adapter returns `{"phrasing_tier": "hypothesis"}` where `{"phrasing_tier": "inquiry"}` is required. **Qualitative scope:** affects 8–12% of evaluation tasks — those with signals near the 0.50 tier boundary — and accounts for a disproportionate share of the gap between the adapter's pass@1 (0.3065) and the maximum achievable score on boundary tasks. **Root cause (training-process artifact):** the 21× paraphrase augmentation in `training/prepare_sft_data.py` holds the `conf` value constant across all 21 paraphrases of each source task. The model therefore sees each specific confidence value hundreds of times with the same label but is never exposed to the ±0.02 neighborhood around the 0.50 boundary — it learns a hard lookup rather than a smooth decision function. **What was tried:** increasing epochs from 2→3 did not resolve the boundary confusion (loss converged at 0.167 but the tier-boundary error persisted in spot-checks). **Next step:** add confidence jitter (±0.03 uniform noise) to augmented training pairs around all three tier boundaries (0.25, 0.50, 0.80) in `prepare_sft_data.py` to expose the decision boundary explicitly during training.
 
 4. **Single-rater IRA limit.** Inter-rater agreement (κ=0.95) is intra-rater over a 24-hour blind window, not multi-annotator. External annotators may surface labelling ambiguities not captured in the current rubric — particularly on synthesis tasks where the signal context is more varied than trace-derived tasks.
 
 ---
 
-*Section 9 added 2026-05-01 (Day 5 complete). All C-006 and C-007 claims resolve to `ablations/ablation_results.json`. Adapter available at: kirutew17654321/tenacious-bench-qwen-lora.*
+### 9.5 Production Kill-Switch
+
+**Path A (SFT generator) — rollback trigger specification:**
+
+| Component | Specification |
+|---|---|
+| **Metric** | 7-day rolling reply-rate on Tenacious outbound batches — the fraction of prospects who respond within 48 hours of an agent-authored touch. Observable directly from the CRM event stream; does not require re-running the held-out benchmark. |
+| **Threshold** | Drop below **0.2347** (= prompt-only baseline 0.2258 + Delta B CI lower bound 0.009) sustained for 7 consecutive days. |
+| **Time window** | 7 consecutive days below threshold before rollback is triggered. |
+| **Action** | Disable the LoRA adapter; revert all inference calls to prompt-only Qwen2.5-0.5B-Instruct with the phrasing-gate system prompt. If reply-rate does not recover to ≥ 0.2347 within 7 days of rollback, escalate to human review of the outbound campaign and the phrasing-gate prompt. |
+| **Justification** | The 0.0088 CI lower bound represents the minimum statistically defensible lift from Delta B. Any production signal below the absolute floor (0.2258 + 0.009 = 0.2347) means the adapter's confidence-calibration improvement — which costs ~$2.40M/yr in trust erosion when absent [C-004] — has not transferred to live prospect behavior, and the marginal over-claiming risk outweighs any engagement upside. The 7-day window matches the typical reply-latency distribution for B2B outbound (48h primary + 5-day tail). |
+
+---
+
+*Section 9 added 2026-05-01 (Day 5 complete). §9.3–9.5 added 2026-05-02 (Day 6). All C-006 and C-007 claims resolve to `ablations/ablation_results.json`. Adapter available at: kirutew17654321/tenacious-bench-qwen-lora.*

@@ -241,7 +241,7 @@ def pairwise_judge_check(
         result = json.loads(raw)
         return bool(result.get("distinct", True))
     except Exception:
-        return True  # on parse error, default to admit
+        return False  # on parse error, default to reject — a failed distinctness check is not a confirmed distinct task
 
 
 # ---------------------------------------------------------------------------

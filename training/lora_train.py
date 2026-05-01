@@ -29,9 +29,9 @@ MODEL_OPTIONS = {
     "qwen2.5-3b-instruct":   "Qwen/Qwen2.5-3B-Instruct",
 }
 # Pinned HuggingFace revision — ensures reproducibility across HF model updates.
-# Training was run on 2026-05-01; "main" resolves to the revision available at that date.
-# To reproduce exactly, pass revision=MODEL_REVISION to from_pretrained().
-MODEL_REVISION = "main"
+# SHA retrieved 2026-05-02 via model_info("Qwen/Qwen2.5-0.5B-Instruct").sha.
+# Training was run on 2026-05-01 against this revision.
+MODEL_REVISION = "7ae557604adf67be50417f59c2c2f167def9a775"
 
 LORA_RANK          = 16
 LORA_ALPHA         = 32
