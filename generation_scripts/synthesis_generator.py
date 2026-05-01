@@ -173,6 +173,78 @@ def dedup_check_ngram(new_task: dict, corpus_dir: pathlib.Path) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Pairwise comparison — C4.3: explicit pairwise similarity gate
+# Compares a candidate task against the most similar existing task in the
+# corpus. If the most similar task scores ≥ PAIRWISE_SIMILARITY_THRESHOLD
+# on prompt Jaccard similarity, a judge pairwise-distinctness check is run.
+# ---------------------------------------------------------------------------
+PAIRWISE_SIMILARITY_THRESHOLD = 0.25  # Jaccard on 4-gram sets; above this triggers judge check
+PAIRWISE_JUDGE_PROMPT = """You are evaluating whether two benchmark tasks are distinct enough
+to both appear in an evaluation dataset.
+
+Task A:
+{task_a}
+
+Task B:
+{task_b}
+
+Are these tasks measuring meaningfully different agent behaviors?
+Respond with JSON only: {{"distinct": true/false, "reason": "one sentence"}}
+"""
+
+
+def _jaccard(text_a: str, text_b: str, n: int = 4) -> float:
+    """Token-level n-gram Jaccard similarity between two prompts."""
+    a = ngrams(text_a, n)
+    b = ngrams(text_b, n)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def pairwise_judge_check(
+    new_task: dict,
+    corpus_dir: pathlib.Path,
+    judge_model: str,
+    client: Any,
+) -> bool:
+    """
+    Finds the most similar existing task by 4-gram Jaccard similarity.
+    If similarity >= PAIRWISE_SIMILARITY_THRESHOLD, runs a pairwise judge
+    call to confirm the two tasks are distinct.
+    Returns True (admit) if tasks are distinct or similarity is below threshold.
+    """
+    new_prompt = new_task["input"]["agent_prompt"]
+    best_sim, best_task = 0.0, None
+    for f in sorted(corpus_dir.glob("*.json")):
+        existing = json.loads(f.read_text(encoding="utf-8"))
+        sim = _jaccard(new_prompt, existing["input"]["agent_prompt"])
+        if sim > best_sim:
+            best_sim, best_task = sim, existing
+
+    if best_sim < PAIRWISE_SIMILARITY_THRESHOLD or best_task is None:
+        return True  # sufficiently different — no judge call needed
+
+    # High similarity — ask the judge model to confirm distinctness
+    prompt = PAIRWISE_JUDGE_PROMPT.format(
+        task_a=json.dumps(new_task, indent=2),
+        task_b=json.dumps(best_task, indent=2),
+    )
+    try:
+        response = client.chat.completions.create(
+            model=judge_model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+            seed=RANDOM_SEED,
+        )
+        raw = response.choices[0].message.content.strip()
+        result = json.loads(raw)
+        return bool(result.get("distinct", True))
+    except Exception:
+        return True  # on parse error, default to admit
+
+
+# ---------------------------------------------------------------------------
 # Schema + scoring validation — gate before admission
 # ---------------------------------------------------------------------------
 REQUIRED_TOP_LEVEL = {"task_id", "version", "category", "source_mode", "input", "expected", "scoring", "metadata"}
@@ -490,6 +562,94 @@ def run_pipeline(
 
     print(f"\nPipeline complete: {len(admitted)}/{count} tasks admitted.")
     return admitted
+
+
+# ---------------------------------------------------------------------------
+# Eval-tier spot-check — C4.5: sample ~50 admitted tasks through eval-tier
+# model for quality calibration. Separate from the dev-tier bulk filter.
+# Cost: ~$0.02–0.05 per task × 50 = ≤$2.50 (within $10 envelope).
+# ---------------------------------------------------------------------------
+SPOT_CHECK_SAMPLE_SIZE = 50
+SPOT_CHECK_PROMPT = """You are a quality auditor for an AI evaluation benchmark.
+
+Review this task and score it on a 1–5 scale for each dimension:
+- coherence: Does the prospect context logically support the expected phrasing tier?
+- verifiability: Can scoring_evaluator.py verify the answer mechanically without ambiguity?
+- rubric_clarity: Is the correct phrasing tier unambiguous given the signals provided?
+- adversarial_value: Does this task test a failure mode a real agent would make?
+
+Task:
+{task_json}
+
+Respond with JSON only: {{"coherence": N, "verifiability": N, "rubric_clarity": N, "adversarial_value": N, "mean": N, "flag": "PASS"/"FLAG", "note": "one sentence"}}
+"""
+
+
+def eval_tier_spot_check(
+    output_dir: pathlib.Path,
+    client: Any,
+    sample_size: int = SPOT_CHECK_SAMPLE_SIZE,
+    seed: int = RANDOM_SEED,
+) -> dict:
+    """
+    Samples up to `sample_size` admitted tasks from output_dir and scores each
+    through the eval-tier model (Claude Sonnet 4.6) for quality calibration.
+
+    This is a post-admission quality gate — it runs AFTER the dev-tier bulk
+    filter and checks whether the admitted corpus meets eval-tier standards.
+    Tasks flagged by this check are candidates for manual review or removal.
+
+    Returns a summary dict with per-task scores and aggregate statistics.
+    """
+    eval_model = ROUTING["calibration"]["judge"]  # anthropic/claude-sonnet-4-6
+    assert_no_leakage("", eval_model, "spot_check")  # eval-tier never generates
+
+    task_files = sorted(output_dir.glob("*.json"))
+    rng = random.Random(seed)
+    sample = rng.sample(task_files, min(sample_size, len(task_files)))
+
+    print(f"\n[EVAL-TIER SPOT CHECK] Scoring {len(sample)} tasks with {eval_model} ...")
+    results = []
+    flagged = []
+
+    for f in sample:
+        task = json.loads(f.read_text(encoding="utf-8"))
+        task_id = task["task_id"]
+        prompt = SPOT_CHECK_PROMPT.format(task_json=json.dumps(task, indent=2))
+        try:
+            response = client.chat.completions.create(
+                model=eval_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                seed=RANDOM_SEED,
+            )
+            raw = response.choices[0].message.content.strip()
+            scores = json.loads(raw)
+            scores["task_id"] = task_id
+            results.append(scores)
+            flag = scores.get("flag", "PASS")
+            print(f"  {task_id}: mean={scores.get('mean', 0):.2f} {flag} — {scores.get('note', '')}")
+            if flag == "FLAG":
+                flagged.append(task_id)
+        except Exception as e:
+            print(f"  {task_id}: spot-check error — {e}")
+            results.append({"task_id": task_id, "error": str(e)})
+
+    scored = [r for r in results if "mean" in r]
+    summary = {
+        "model":        eval_model,
+        "sample_size":  len(sample),
+        "scored":       len(scored),
+        "flagged":      flagged,
+        "mean_coherence":     round(sum(r.get("coherence", 0) for r in scored) / max(len(scored), 1), 2),
+        "mean_verifiability": round(sum(r.get("verifiability", 0) for r in scored) / max(len(scored), 1), 2),
+        "mean_rubric_clarity": round(sum(r.get("rubric_clarity", 0) for r in scored) / max(len(scored), 1), 2),
+        "mean_overall": round(sum(r.get("mean", 0) for r in scored) / max(len(scored), 1), 2),
+        "per_task":     results,
+    }
+    print(f"\nSpot-check complete: {len(flagged)} flagged / {len(scored)} scored. "
+          f"Mean overall: {summary['mean_overall']:.2f}")
+    return summary
 
 
 def main() -> None:
