@@ -56,18 +56,18 @@
       "claim_text": "Delta A \u00e2\u20ac\u201d trained vs baseline on held_out",
       "source_type": "ablation_row",
       "source_id": "ablations/ablation_results.json \u00e2\u20ac\u201d delta_a",
-      "value": 0.23,
+      "value": -0.2783,
       "verified": true,
-      "_note": "Delta A = 0.2300 (p=0.0010, significant=True). DRY RUN \u2014 mock outputs."
+      "_note": "Delta A = -0.2783 (p=0.0000, significant=True). Real adapter."
     },
     {
       "claim_id": "C-007",
       "claim_text": "Delta B \u00e2\u20ac\u201d trained vs prompt-engineered on held_out",
       "source_type": "ablation_row",
       "source_id": "ablations/ablation_results.json \u00e2\u20ac\u201d delta_b",
-      "value": 0.13,
+      "value": 0.1046,
       "verified": true,
-      "_note": "Delta B = 0.1300 (p=0.0230, significant=True). DRY RUN \u2014 mock outputs."
+      "_note": "Delta B = 0.1046 (p=0.0180, significant=True). Real adapter."
     }
   ]
 }

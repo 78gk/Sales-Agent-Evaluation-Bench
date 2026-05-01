@@ -1,0 +1,261 @@
+{
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "elapsed_minutes": 34.77,
+  "train_pairs": 2709,
+  "dev_pairs": 294,
+  "lora_rank": 16,
+  "lora_alpha": 32,
+  "learning_rate": 0.0002,
+  "training_history": [
+    {
+      "step": 10,
+      "loss": 14.3266,
+      "eval_loss": null
+    },
+    {
+      "step": 20,
+      "loss": 12.9685,
+      "eval_loss": null
+    },
+    {
+      "step": 30,
+      "loss": 10.6326,
+      "eval_loss": null
+    },
+    {
+      "step": 40,
+      "loss": 7.6425,
+      "eval_loss": null
+    },
+    {
+      "step": 50,
+      "loss": 4.3365,
+      "eval_loss": null
+    },
+    {
+      "step": 60,
+      "loss": 2.1157,
+      "eval_loss": null
+    },
+    {
+      "step": 70,
+      "loss": 1.0731,
+      "eval_loss": null
+    },
+    {
+      "step": 80,
+      "loss": 0.7289,
+      "eval_loss": null
+    },
+    {
+      "step": 90,
+      "loss": 0.5829,
+      "eval_loss": null
+    },
+    {
+      "step": 100,
+      "loss": 0.5428,
+      "eval_loss": null
+    },
+    {
+      "step": 110,
+      "loss": 0.5121,
+      "eval_loss": null
+    },
+    {
+      "step": 120,
+      "loss": 0.4698,
+      "eval_loss": null
+    },
+    {
+      "step": 130,
+      "loss": 0.4179,
+      "eval_loss": null
+    },
+    {
+      "step": 140,
+      "loss": 0.4113,
+      "eval_loss": null
+    },
+    {
+      "step": 150,
+      "loss": 0.4029,
+      "eval_loss": null
+    },
+    {
+      "step": 160,
+      "loss": 0.3351,
+      "eval_loss": null
+    },
+    {
+      "step": 170,
+      "loss": 0.3748,
+      "eval_loss": null
+    },
+    {
+      "step": 180,
+      "loss": 0.3342,
+      "eval_loss": null
+    },
+    {
+      "step": 190,
+      "loss": 0.336,
+      "eval_loss": null
+    },
+    {
+      "step": 200,
+      "loss": 0.2857,
+      "eval_loss": null
+    },
+    {
+      "step": 210,
+      "loss": 0.3011,
+      "eval_loss": null
+    },
+    {
+      "step": 220,
+      "loss": 0.2821,
+      "eval_loss": null
+    },
+    {
+      "step": 230,
+      "loss": 0.2637,
+      "eval_loss": null
+    },
+    {
+      "step": 240,
+      "loss": 0.2812,
+      "eval_loss": null
+    },
+    {
+      "step": 250,
+      "loss": 0.2742,
+      "eval_loss": null
+    },
+    {
+      "step": 260,
+      "loss": 0.2685,
+      "eval_loss": null
+    },
+    {
+      "step": 270,
+      "loss": 0.2472,
+      "eval_loss": null
+    },
+    {
+      "step": 280,
+      "loss": 0.2457,
+      "eval_loss": null
+    },
+    {
+      "step": 290,
+      "loss": 0.2312,
+      "eval_loss": null
+    },
+    {
+      "step": 300,
+      "loss": 0.2128,
+      "eval_loss": null
+    },
+    {
+      "step": 310,
+      "loss": 0.2184,
+      "eval_loss": null
+    },
+    {
+      "step": 320,
+      "loss": 0.2017,
+      "eval_loss": null
+    },
+    {
+      "step": 330,
+      "loss": 0.2004,
+      "eval_loss": null
+    },
+    {
+      "step": 340,
+      "loss": 0.2011,
+      "eval_loss": null
+    },
+    {
+      "step": 350,
+      "loss": 0.1864,
+      "eval_loss": null
+    },
+    {
+      "step": 360,
+      "loss": 0.188,
+      "eval_loss": null
+    },
+    {
+      "step": 370,
+      "loss": 0.1836,
+      "eval_loss": null
+    },
+    {
+      "step": 380,
+      "loss": 0.166,
+      "eval_loss": null
+    },
+    {
+      "step": 390,
+      "loss": 0.1705,
+      "eval_loss": null
+    },
+    {
+      "step": 400,
+      "loss": 0.1821,
+      "eval_loss": null
+    },
+    {
+      "step": 410,
+      "loss": 0.1729,
+      "eval_loss": null
+    },
+    {
+      "step": 420,
+      "loss": 0.1798,
+      "eval_loss": null
+    },
+    {
+      "step": 430,
+      "loss": 0.1879,
+      "eval_loss": null
+    },
+    {
+      "step": 440,
+      "loss": 0.1585,
+      "eval_loss": null
+    },
+    {
+      "step": 450,
+      "loss": 0.1577,
+      "eval_loss": null
+    },
+    {
+      "step": 460,
+      "loss": 0.1879,
+      "eval_loss": null
+    },
+    {
+      "step": 470,
+      "loss": 0.1646,
+      "eval_loss": null
+    },
+    {
+      "step": 480,
+      "loss": 0.165,
+      "eval_loss": null
+    },
+    {
+      "step": 490,
+      "loss": 0.1571,
+      "eval_loss": null
+    },
+    {
+      "step": 500,
+      "loss": 0.1674,
+      "eval_loss": null
+    }
+  ]
+}

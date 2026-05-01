@@ -4,9 +4,9 @@
     "lora_adapter": {
       "model": "qwen2.5-0.5b-instruct",
       "adapter": "training/checkpoint",
-      "pass_at_1": 0.78,
-      "n_tasks": 50,
-      "dry_run": true
+      "pass_at_1": 0.3065,
+      "n_tasks": 62,
+      "dry_run": false
     },
     "baseline_week10": {
       "source": "evidence_graph.json C-001 (Week 10 official 30-trial run)",
@@ -16,34 +16,34 @@
     "prompt_engineered": {
       "model": "qwen2.5-0.5b-instruct",
       "adapter": null,
-      "pass_at_1": 0.66,
-      "n_tasks": 50,
-      "dry_run": true
+      "pass_at_1": 0.2258,
+      "n_tasks": 62,
+      "dry_run": false
     }
   },
   "delta_a": {
     "description": "Trained LoRA vs Week 10 baseline on held_out (primary result)",
-    "lora_pass_at_1": 0.78,
-    "baseline_pass_at_1": 0.56,
+    "lora_pass_at_1": 0.3065,
+    "baseline_pass_at_1": 0.6290322580645161,
     "bootstrap": {
-      "delta": 0.23,
-      "p_value": 0.001,
-      "ci_95_lower": 0.064,
-      "ci_95_upper": 0.392,
+      "delta": -0.2783,
+      "p_value": 0.0,
+      "ci_95_lower": -0.4053,
+      "ci_95_upper": -0.1355,
       "n_bootstrap": 1000,
       "significant": true
     },
     "fills_claim": "C-006"
   },
   "delta_b": {
-    "description": "Trained LoRA vs prompt-engineered Qwen 3.5 (secondary result \u2014 publishable regardless of sign)",
-    "lora_pass_at_1": 0.78,
-    "prompt_pass_at_1": 0.66,
+    "description": "Trained LoRA vs base model with phrasing-gate prompt (no LoRA) \u2014 secondary result, publishable regardless of sign",
+    "lora_pass_at_1": 0.3065,
+    "prompt_pass_at_1": 0.2258,
     "bootstrap": {
-      "delta": 0.13,
-      "p_value": 0.023,
-      "ci_95_lower": 0.0,
-      "ci_95_upper": 0.264,
+      "delta": 0.1046,
+      "p_value": 0.018,
+      "ci_95_lower": 0.0088,
+      "ci_95_upper": 0.2051,
       "n_bootstrap": 1000,
       "significant": true
     },
