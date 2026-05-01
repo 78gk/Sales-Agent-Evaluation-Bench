@@ -66,8 +66,8 @@ This adapter trains the phrasing-gate decision directly, using 2,625 ChatML pair
 ## Training Data
 
 **Dataset:** [Tenacious-Bench v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1)  
-**Split used for training:** `train` (131 tasks, primarily `signal_over_claiming` category)  
-**Augmentation:** 20x paraphrase rotation via `training/prepare_sft_data.py` (LIMA-style: only augmentations that preserve the correct phrasing tier are kept), producing 2,751 ChatML pairs  
+**Split used for training:** `train` (143 tasks, primarily `signal_over_claiming` category)  
+**Augmentation:** 20x paraphrase rotation via `training/prepare_sft_data.py` (LIMA-style: only augmentations that preserve the correct phrasing tier are kept), producing 3,003 ChatML pairs  
 **Format:** ChatML — system prompt specifies the phrasing gate rules; user turn provides prospect signals + task; assistant turn provides JSON with phrasing_tier and any required flags
 
 ---
