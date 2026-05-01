@@ -46,11 +46,12 @@ Trace sim_a553180f (task 11, reward=0.0) shows the structural failure: assertive
 | Abstention-when-required | `routed_to_human` flag | ✓ boolean |
 | Thread isolation | No cross-thread entity mention | ✓ regex check |
 | Staleness disclosure | `stale_flag` when data age > window | ✓ field presence |
+| Banned-phrase scan | `banned_phrase_check()` over output text | ✓ regex match |
 
-All four dimensions are scored by `scoring_evaluator.py` with no human in the loop.
+All five dimensions are scored by `scoring_evaluator.py` with no human in the loop. The 23-phrase banned list, 5-tone-marker framework, and 24 GOOD/BAD anchor drafts (TB-G001–TB-G024) come verbatim from `input/Tenacious Style Guide v2.docx` — the canonical Tenacious-rubric source named in the challenge brief.
 
 ---
 
 ## Why Signal Over-Claiming Is the Training Target
 
-Highest frequency (P-006–P-010, trigger rate 0.55), highest annual cost (~$2.40M/1,000 touches), and fixable in the prompt layer at $0 marginal cost. Full rationale in `seeds/target_failure_mode.md`.
+Highest frequency (P-006–P-010, rate 0.55), highest cost (~$2.40M/1,000), fixable at $0 marginal. Full rationale in `seeds/target_failure_mode.md`.

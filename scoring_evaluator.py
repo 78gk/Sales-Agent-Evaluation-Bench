@@ -20,6 +20,75 @@ PHRASING_TIERS = ["assertive", "inquiry", "hypothesis", "abstention"]
 SEED = 42  # reproducibility — pin in all scripts
 
 # ---------------------------------------------------------------------------
+# Banned-phrase regex — sourced verbatim from
+# input/Tenacious Style Guide and 12 Good-Bad Examples v2.docx, "Banned Phrases" table.
+# The challenge brief (Inputs You Have, Inputs You Build) explicitly names this list
+# as a rubric exemplar: "the email contains zero of these 23 banned phrases".
+# Each entry compiles to a case-insensitive regex; word boundaries used where the
+# phrase is short enough that a substring match would over-trigger.
+# ---------------------------------------------------------------------------
+BANNED_PHRASES = [
+    r"\bworld[- ]class\b",
+    r"\btop talent\b",
+    r"\bA[- ]players\b",
+    r"\brockstar\b", r"\bninja\b", r"\bwizard\b",
+    r"\bskyrocket\b", r"\bsupercharge\b", r"\b10x\b",
+    r"I hope this email finds you well",
+    r"just following up", r"circling back",
+    r"\bQuick question\b", r"\bQuick chat\b",
+    r"\bsynergize\b", r"\bsynergy\b", r"\bleverage\b", r"\becosystem\b",
+    r"\bgame[- ]changer\b", r"\bdisruptor\b", r"\bparadigm shift\b",
+    r"our proprietary", r"AI[- ]powered",
+    r"You'?ll regret missing", r"Don'?t miss out\b",
+    r"Per my last email",
+    r"I'?ll keep this brief",
+    r"I noticed you'?re a",
+    # Professional-marker: "bench" used externally to a prospect.
+    # Wrapped in word boundaries so technical references like "benchmark" or
+    # internal docs don't false-trigger (we only check prospect-facing text).
+    r"\bbench\b",
+]
+_BANNED_PHRASE_RE = [re.compile(p, re.IGNORECASE) for p in BANNED_PHRASES]
+
+
+def banned_phrase_check(text: str) -> bool:
+    """Returns True iff the text contains NONE of the banned phrases.
+
+    Used as a `check` expression in task scoring dimensions, e.g.
+        "check": "banned_phrase_check(output.get('text', ''))"
+    Empty text passes by definition (gives JSON-only outputs a free pass —
+    the banned-phrase rule applies only to drafts that actually generate
+    prospect-facing prose).
+    """
+    if not isinstance(text, str) or not text:
+        return True
+    return not any(rgx.search(text) for rgx in _BANNED_PHRASE_RE)
+
+
+def signal_named(text: str, signals: dict) -> bool:
+    """Returns True iff the text references at least one specific signal value.
+
+    Implements the Style Guide "hiring signal grounding" pre-flight check.
+    A task uses this with:
+        "check": "signal_named(output.get('text', ''), expected.get('signals', {}))"
+    A signal is named if any of its scalar values (funding amount, role count,
+    layoff %, leadership-change date) appears verbatim in the text. Empty text
+    or empty signals returns False — no grounding possible.
+    """
+    if not isinstance(text, str) or not text or not signals:
+        return False
+    text_low = text.lower()
+    for sig in signals.values():
+        if isinstance(sig, dict):
+            val = sig.get("value")
+            if val and str(val).lower() in text_low:
+                return True
+        elif isinstance(sig, (str, int, float)):
+            if str(sig).lower() in text_low:
+                return True
+    return False
+
+# ---------------------------------------------------------------------------
 # Calibration reference — what PASS and FAIL look like per scoring dimension
 # ---------------------------------------------------------------------------
 # phrasing_tier (weight 0.60 in most tasks)
@@ -72,7 +141,13 @@ def score_task(task: dict, agent_output: dict) -> dict:
             result = eval(
                 check_expr,
                 {"__builtins__": {"any": any, "not": lambda x: not x, "all": all}},
-                {"output": agent_output, "expected": expected, "re": re},
+                {
+                    "output": agent_output,
+                    "expected": expected,
+                    "re": re,
+                    "banned_phrase_check": banned_phrase_check,
+                    "signal_named": signal_named,
+                },
             )
             dim_score = 1.0 if result else 0.0
         except Exception as e:

@@ -179,6 +179,19 @@ All scoring dimensions must be **machine-verifiable** — `scoring_evaluator.py`
 | `routed_to_human` | Boolean field in agent output JSON |
 | `stale_disclosed` | Presence of `stale_flag: true` when source age > validity_window |
 | `thread_clean` | Regex: no entity names from other active threads in response |
+| `banned_phrases` | `banned_phrase_check()` over output text — 23 regex patterns from Style Guide v2 |
+
+---
+
+## Style Guide Alignment
+
+`input/Tenacious Style Guide and 12 Good-Bad Examples v2.docx` is the canonical Tenacious-rubric source named in the challenge brief (Inputs You Have, Inputs You Build). Tenacious-Bench v0.1 implements its rubric via three machine-verifiable layers:
+
+1. **Confidence-aware phrasing** — the guide specifies a 2-tier rule (High → assertive permitted; Medium/Low → interrogative/conditional). Our schema refines this into a 4-tier scheme (`assertive` ≥0.80, `inquiry` 0.50–0.79, `hypothesis` 0.25–0.49, `abstention` <0.25 or commitment requested) so the rubric is gradable from a single numeric confidence field. The 4-tier scheme is a strict refinement: every (signal, expected_tier) pair satisfies the guide's 2-tier rule. Justification documented per-task in `metadata.notes`.
+2. **Banned-phrase regex** — the 23 phrases enumerated in the guide's "Banned Phrases" table are loaded into `BANNED_PHRASES` in `scoring_evaluator.py`. The dimension is opt-in per task and applies only when an agent emits prose (JSON-only outputs pass by definition).
+3. **Anchor tasks (TB-G001–TB-G024)** — the 12 GOOD drafts and 12 BAD drafts in the guide are converted to gold-standard tasks via `generation_scripts/style_guide_anchors.py`. GOOD drafts → train partition (positive examples); BAD drafts → held_out (adversarial probes labeled with the *correct* behavior, not the failure pattern). Provenance attribution: `source_mode = "hand_authored"`, `metadata.style_guide_anchor` names the draft.
+
+The five tone markers (Direct, Grounded, Honest, Professional, Non-condescending) are referenced in the SFT system prompt (`training/prepare_sft_data.py`) as named training targets but not individually scored — full per-marker scoring would require an LLM-judge dimension that is out of v0.1 scope and outside the $10 cost cap.
 
 ---
 

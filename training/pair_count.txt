@@ -1,5 +1,5 @@
-source_tasks=131
+source_tasks=143
 augment_factor=21
-total_pairs=2751
+total_pairs=3003
 output=training\qwen_pairs.jsonl
 seed=42

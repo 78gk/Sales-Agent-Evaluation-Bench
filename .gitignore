@@ -30,3 +30,7 @@ training/*.pt
 # OS
 .DS_Store
 Thumbs.db
+.tmp_docx/
+
+# Sealed held-out archive — must NEVER go public
+held_out.zip

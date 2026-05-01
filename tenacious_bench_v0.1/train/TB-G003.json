@@ -1,0 +1,52 @@
+{
+  "task_id": "TB-G003",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #3",
+      "icp_segment": 3,
+      "signals": {
+        "leadership_change": {
+          "conf": 0.85,
+          "value": "new CTO announcement",
+          "age_days": 18,
+          "validity_window_days": 90,
+          "source": "linkedin"
+        }
+      }
+    },
+    "agent_prompt": "Draft a cold outreach to Priya, newly appointed CTO at Helix, offering a brief on offshore engagement models."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #3",
+    "icp_segment": 3,
+    "notes": "Style Guide v2 GOOD #3: High-confidence leadership change, low-ask self-aware framing -> inquiry."
+  }
+}

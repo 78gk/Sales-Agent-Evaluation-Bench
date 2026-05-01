@@ -1,0 +1,59 @@
+{
+  "task_id": "TB-G008",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #8",
+      "icp_segment": 2,
+      "signals": {
+        "layoffs": {
+          "conf": 0.85,
+          "value": "11 sub-sector layoffs in 90 days, up from 4",
+          "age_days": 14,
+          "validity_window_days": 90,
+          "source": "layoffs.fyi"
+        },
+        "prior_thread": {
+          "conf": 0.85,
+          "value": "August conversation, board not yet pushing",
+          "age_days": 90,
+          "validity_window_days": 180,
+          "source": "thread"
+        }
+      }
+    },
+    "agent_prompt": "Draft a re-engagement to Marcus introducing two new fresh data points (sub-sector layoffs, peer offshore adoption)."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #8",
+    "icp_segment": 2,
+    "notes": "Style Guide v2 GOOD #8: Re-engagement with new content, no guilt framing -> inquiry."
+  }
+}

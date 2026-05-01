@@ -1,0 +1,59 @@
+{
+  "task_id": "TB-G001",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #1",
+      "icp_segment": 1,
+      "signals": {
+        "funding": {
+          "conf": 0.85,
+          "value": "$14M Series A",
+          "age_days": 120,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "hiring": {
+          "conf": 0.85,
+          "value": "Python roles 2 -> 7 in 60 days",
+          "age_days": 14,
+          "validity_window_days": 60,
+          "source": "job_posts"
+        }
+      }
+    },
+    "agent_prompt": "Draft a cold outreach to Maya at a Series A SaaS company referencing her recent funding and Python hiring velocity."
+  },
+  "expected": {
+    "phrasing_tier": "assertive",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'assertive'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #1",
+    "icp_segment": 1,
+    "notes": "Style Guide v2 GOOD #1: High-confidence funding + hiring signals -> assertive permitted."
+  }
+}

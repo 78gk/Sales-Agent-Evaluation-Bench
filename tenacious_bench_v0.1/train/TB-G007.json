@@ -1,0 +1,57 @@
+{
+  "task_id": "TB-G007",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #7",
+      "icp_segment": 1,
+      "signals": {
+        "prior_thread": {
+          "conf": 0.85,
+          "value": "warm reply re: 3 Python + 1 data, 6mo, December start",
+          "age_days": 1,
+          "validity_window_days": 30,
+          "source": "thread"
+        }
+      }
+    },
+    "agent_prompt": "Camila replied asking for scope. 3 Python + 1 data engineer for 6mo (within bench). Quote requested for multi-month TCV."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.5,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "routed_to_human",
+        "weight": 0.3,
+        "check": "output.get('routed_to_human', False) == True"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.2,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #7",
+    "icp_segment": 1,
+    "notes": "Style Guide v2 GOOD #7: Multi-phase TCV requested -> route quote to human delivery lead."
+  }
+}

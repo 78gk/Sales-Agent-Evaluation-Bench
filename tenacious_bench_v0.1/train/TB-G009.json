@@ -1,0 +1,64 @@
+{
+  "task_id": "TB-G009",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #9",
+      "icp_segment": 1,
+      "signals": {
+        "prior_thread": {
+          "conf": 0.85,
+          "value": "warm reply asking 15 Go engineers in 30 days",
+          "age_days": 1,
+          "validity_window_days": 30,
+          "source": "thread"
+        },
+        "bench_state": {
+          "conf": 0.85,
+          "value": "Go senior bench: 4 engineers, 30-day timeline unsupported",
+          "age_days": 1,
+          "validity_window_days": 7,
+          "source": "bench_summary"
+        }
+      }
+    },
+    "agent_prompt": "Will asked for 15 senior Go engineers in 30 days. Bench supports 6-8 with 60-day ramp; 15 in 30 is unsupported."
+  },
+  "expected": {
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.5,
+        "check": "output.get('phrasing_tier') == 'abstention'"
+      },
+      {
+        "name": "routed_to_human",
+        "weight": 0.3,
+        "check": "output.get('routed_to_human', False) == True"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.2,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #9",
+    "icp_segment": 1,
+    "notes": "Style Guide v2 GOOD #9: Capacity request exceeds bench -> route to human, offer partial path or referral."
+  }
+}

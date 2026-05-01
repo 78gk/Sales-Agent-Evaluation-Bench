@@ -1,0 +1,59 @@
+{
+  "task_id": "TB-G012",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #12",
+      "icp_segment": 4,
+      "signals": {
+        "prior_call": {
+          "conf": 0.85,
+          "value": "discovery call yesterday, follow-up date Thursday agreed",
+          "age_days": 1,
+          "validity_window_days": 7,
+          "source": "call_notes"
+        },
+        "competitor_stack": {
+          "conf": 0.65,
+          "value": "3 loyalty platforms on dbt+Snowflake",
+          "age_days": 14,
+          "validity_window_days": 90,
+          "source": "builtwith"
+        }
+      }
+    },
+    "agent_prompt": "Draft a 2-line post-call nurture to Kevin with one new competitor-stack data point. No reply needed, follow-up Thursday agreed."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #12",
+    "icp_segment": 4,
+    "notes": "Style Guide v2 GOOD #12: Warm post-call nurture, no ask, scheduled follow-up -> inquiry."
+  }
+}

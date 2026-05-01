@@ -1,0 +1,59 @@
+{
+  "task_id": "TB-G010",
+  "version": "v0.1",
+  "category": "signal_over_claiming",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #10",
+      "icp_segment": 1,
+      "signals": {
+        "funding": {
+          "conf": 0.85,
+          "value": "$9M Series A March",
+          "age_days": 60,
+          "validity_window_days": 180,
+          "source": "crunchbase"
+        },
+        "ai_maturity": {
+          "conf": 0.85,
+          "value": "score 0-1, no AI roles posted",
+          "age_days": 30,
+          "validity_window_days": 90,
+          "source": "internal"
+        }
+      }
+    },
+    "agent_prompt": "Draft an outreach to Sophia (Series A, 10 engineers, no AI roles). Frame as 'first AI function' not capability gap."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #10",
+    "icp_segment": 1,
+    "notes": "Style Guide v2 GOOD #10: AI maturity 0-1 -> Segment 1 stand-up framing, conditional language."
+  }
+}

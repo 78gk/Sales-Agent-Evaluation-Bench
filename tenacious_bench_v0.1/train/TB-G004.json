@@ -1,0 +1,59 @@
+{
+  "task_id": "TB-G004",
+  "version": "v0.1",
+  "category": "bench_over_commitment",
+  "source_mode": "hand_authored",
+  "seed_trace_id": null,
+  "seed_probe_id": null,
+  "input": {
+    "prospect_context": {
+      "company": "StyleGuide-GOOD #4",
+      "icp_segment": 4,
+      "signals": {
+        "competitor_gap": {
+          "conf": 0.85,
+          "value": "3 peer companies posting MLOps roles, prospect has none",
+          "age_days": 60,
+          "validity_window_days": 90,
+          "source": "competitor_brief"
+        },
+        "ai_maturity": {
+          "conf": 0.85,
+          "value": "score 2",
+          "age_days": 30,
+          "validity_window_days": 90,
+          "source": "internal"
+        }
+      }
+    },
+    "agent_prompt": "Draft a capability-gap outreach to Felix re: MLOps function in 2026, framed as research finding not deficiency."
+  },
+  "expected": {
+    "phrasing_tier": "inquiry",
+    "routed_to_human": false,
+    "stale_disclosed": false,
+    "thread_clean": true
+  },
+  "scoring": {
+    "dimensions": [
+      {
+        "name": "phrasing_tier",
+        "weight": 0.714,
+        "check": "output.get('phrasing_tier') == 'inquiry'"
+      },
+      {
+        "name": "banned_phrases",
+        "weight": 0.286,
+        "check": "banned_phrase_check(output.get('text', ''))"
+      }
+    ],
+    "pass_threshold": 0.6
+  },
+  "metadata": {
+    "authored_by": "Tenacious Style Guide v2 (instructor-provided), adapted by Kirubel Tewodros",
+    "authored_date": "2026-05-01",
+    "style_guide_anchor": "GOOD #4",
+    "icp_segment": 4,
+    "notes": "Style Guide v2 GOOD #4: High-confidence peer gap + AI maturity 2 -> capability-gap pitch via inquiry."
+  }
+}

@@ -23,18 +23,21 @@ No external funding. LLM API costs capped at $10 (see cost_log.md).
 Each instance is an evaluation task: a prospect context (company signals with confidence scores and age), an agent prompt, expected output fields (phrasing_tier, routed_to_human, stale_disclosed, thread_clean), and a machine-verifiable scoring rubric.
 
 **How many instances?**  
-236 tasks (Day 5 final); target 200–300 achieved.
-Current split: 131 train / 55 dev / 50 held_out (sealed).
+260 tasks (Day 5 final, v0.1.1 with Style-Guide anchors added 2026-05-01); target 200–300 achieved.
+Current split: 143 train / 55 dev / 62 held_out (sealed).
 
 **Authoring mode distribution (final):**  
 
 | Mode | Count | % | Notes |
 |---|---|---|---|
-| adversarial | 83 | 35% | Hand-authored high-risk boundary cases (18 train + 15 dev + 50 held_out) |
-| synthesis | 81 | 34% | Multi-LLM synthesis, Qwen/Qwen3-235b-a22b → DeepSeek/deepseek-chat-v3-0324 (train + dev) |
-| programmatic | 38 | 16% | Parameter sweeps (24 train + 14 dev) |
-| trace_derived | 34 | 14% | Derived from seeds/trace_log.jsonl (33 train + 1 dev) |
-| **Total** | **236** | **100%** | |
+| adversarial | 83 | 32% | Hand-authored high-risk boundary cases (18 train + 15 dev + 50 held_out) |
+| synthesis | 81 | 31% | Multi-LLM synthesis, Qwen/Qwen3-235b-a22b → DeepSeek/deepseek-chat-v3-0324 (train + dev) |
+| programmatic | 38 | 15% | Parameter sweeps (24 train + 14 dev) |
+| trace_derived | 34 | 13% | Derived from seeds/trace_log.jsonl (33 train + 1 dev) |
+| **hand_authored (Style Guide v2 anchors)** | **24** | **9%** | **TB-G001–TB-G024 — 12 GOOD drafts (train) + 12 BAD drafts (held_out, labels = correct behavior). Added v0.1.1 on 2026-05-01 after instructor-provided `Tenacious Style Guide v2.docx` arrived. Provenance: `metadata.style_guide_anchor` names the source draft.** |
+| **Total** | **260** | **100%** | |
+
+**v0.1.1 Amendment Note (2026-05-01):** The Tenacious Style Guide v2 document, named in the challenge brief as canonical Tenacious-rubric input, arrived at the end of Day 5. To preserve traceability rather than retro-relabel the existing corpus, the 24 hand-labeled drafts in the guide were added as a self-contained supplement (TB-G001–TB-G024), and the scoring evaluator was extended with a banned-phrase regex check (`banned_phrase_check()` in `scoring_evaluator.py`) covering the 23 phrases enumerated in the guide. The existing 236 tasks remain unchanged; a v0.2 full re-audit against the 5-tone-marker framework is documented as future work in the model card limitations section.
 
 **Per-Authoring-Mode Descriptions:**
 
@@ -156,21 +159,24 @@ Documentation for Responsible AI*
 
 ### Telescopic Overview
 
-Tenacious-Bench v0.1 is a 236-task, machine-verifiable evaluation benchmark for AI outbound
+Tenacious-Bench v0.1 is a 260-task, machine-verifiable evaluation benchmark for AI outbound
 sales agents, targeting confidence-calibrated phrasing decisions. It fills four gaps in
 τ²-Bench (retail domain) that are directly responsible for the highest-cost failure modes
 observed in the Week 10 Tenacious Conversion Engine: Signal Over-Claiming, Bench
-Over-Commitment, Multi-Thread Leakage, and Stale-Signal Disclosure.
+Over-Commitment, Multi-Thread Leakage, and Stale-Signal Disclosure. The Tenacious Style Guide v2
+(named as canonical Tenacious rubric in the challenge brief) is implemented through (a) a 23-phrase
+banned-phrase regex in the scoring evaluator and (b) 24 hand-labeled anchor tasks (TB-G001–TB-G024,
+v0.1.1 supplement, 2026-05-01).
 
 ### Periscopic Overview
 
 | Attribute | Value |
 |---|---|
-| Total tasks (final) | 236 |
-| Train / Dev / Held_out split | 131 / 55 / 50 (55% / 23% / 21%); target was 50/30/20 — dev is short of 30% target because synthesis admission rate (≈55% of candidates) yielded fewer tasks than projected |
-| Authoring modes | Adversarial (35%), Multi-LLM synthesis (34%), Programmatic (16%), Trace-derived (14%); original planned target was 30/30/25/15 — adversarial is over-represented because all 50 held_out tasks are adversarial (by design: held_out uses only hand-authored and programmatic tasks, no synthesis) |
-| Primary failure category | Signal Over-Claiming (139/236 = 59% of tasks) |
-| Scoring dimensions | 4 (phrasing_tier, routed_to_human, stale_disclosed, thread_clean) |
+| Total tasks (final) | 260 (v0.1.1, includes 24 Style-Guide anchor tasks added 2026-05-01) |
+| Train / Dev / Held_out split | 143 / 55 / 62 (55% / 21% / 24%); target was 50/30/20 — dev is short of 30% target because synthesis admission rate (≈55% of candidates) yielded fewer tasks than projected; held_out grew from 50 → 62 with v0.1.1 BAD-draft anchor probes |
+| Authoring modes | Adversarial (32%), Multi-LLM synthesis (31%), Programmatic (15%), Trace-derived (13%), Hand-authored Style Guide anchors (9%); original planned target was 30/30/25/15 — adversarial is over-represented because the original 50 held_out tasks were all adversarial (by design); v0.1.1 adds 24 Style Guide anchors as a separate hand_authored category |
+| Primary failure category | Signal Over-Claiming (139/260 = 53% of tasks) |
+| Scoring dimensions | 5 (phrasing_tier, routed_to_human, stale_disclosed, thread_clean, banned_phrases) |
 | Pass threshold | ≥0.60 weighted score |
 | Intended use | LoRA SFT training + A/B ablation on held_out split |
 | Out of scope | General customer service, retail Q&A, non-B2B sales domains |
