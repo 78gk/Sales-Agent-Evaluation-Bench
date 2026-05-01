@@ -2,7 +2,7 @@
 
 **Title:** Evaluation gaps for confidence-calibrated B2B sales agents — lessons from building Tenacious-Bench v0.1
 
-**Target repo:** https://github.com/sierra-research/tau2-bench (or equivalent τ²-Bench repo)
+**Posted at:** https://github.com/sierra-research/tau-bench/issues/82
 
 ---
 

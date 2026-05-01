@@ -82,7 +82,7 @@ Everything is CC-BY-4.0 (dataset) and Apache 2.0 (adapter):
 - **Dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1)
 - **Adapter:** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora)
 - **Code:** [github.com/78gk/Sales-Agent-Evaluation-Bench](https://github.com/78gk/Sales-Agent-Evaluation-Bench)
-- **τ²-Bench discussion:** [github.com/sierra-research/tau2-bench](https://github.com/sierra-research/tau2-bench) _(issue being submitted)_
+- **τ²-Bench discussion:** [sierra-research/tau-bench issue #82](https://github.com/sierra-research/tau-bench/issues/82)
 - **HF Post:** [huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1)
 
 The benchmark is immediately usable: `pip install -r requirements.txt` and `python scoring_evaluator.py --validate`. The scoring evaluator runs in under 2 seconds per task with no GPU required.
