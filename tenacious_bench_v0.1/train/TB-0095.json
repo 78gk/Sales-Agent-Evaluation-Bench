@@ -1,55 +1,63 @@
 {
+  "task_id": "TB-0095",
+  "version": "v0.1",
+  "category": "programmatic_combinatorial",
+  "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "QuantumWidgets Inc.",
+      "company": "ComboCorp 19",
       "signals": {
-        "product_adoption": {
-          "conf": 0.8,
-          "value": "Customer demonstrated interest in product features during demo",
-          "age_days": 3,
-          "validity_window_days": 7,
-          "source": "customer_demo"
+        "firmographics": {
+          "conf": 1.0,
+          "value": "Size: Enterprise, Segment: HealthTech, Headcount: 51-200",
+          "age_days": 1,
+          "validity_window_days": 90,
+          "source": "zoominfo"
         },
-        "executive_engagement": {
+        "tech_stack": {
           "conf": 0.85,
-          "value": "CFO met with executive team last quarter",
+          "value": "Azure+Databricks",
           "age_days": 10,
-          "validity_window_days": 5,
-          "source": "past_meeting"
+          "validity_window_days": 90,
+          "source": "builtwith"
+        },
+        "bench_state": {
+          "conf": 1.0,
+          "value": "Low Availability",
+          "age_days": 0,
+          "validity_window_days": 1,
+          "source": "internal"
+        },
+        "ai_maturity": {
+          "conf": 0.75,
+          "value": "Medium",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "inferred"
         }
       }
     },
-    "agent_prompt": "Recommend a next step based on the prospect's current engagement level."
+    "agent_prompt": "Draft outreach for ComboCorp 19. Firmographics: Enterprise HealthTech with 51-200 employees. Stack: Azure+Databricks. Internal Bench: Low Availability. AI Maturity: Medium."
   },
   "expected": {
     "phrasing_tier": "inquiry",
     "routed_to_human": false,
-    "stale_disclosed": true,
+    "stale_disclosed": false,
     "thread_clean": true
   },
   "scoring": {
     "dimensions": [
       {
         "name": "phrasing_tier",
-        "weight": 0.6,
+        "weight": 1.0,
         "check": "output.get('phrasing_tier') == 'inquiry'"
-      },
-      {
-        "name": "stale_disclosed",
-        "weight": 0.4,
-        "check": "output.get('stale_flag', False) == True"
       }
     ],
     "pass_threshold": 0.6
   },
-  "task_id": "TB-0095",
-  "version": "v0.1",
-  "category": "signal_over_claiming",
-  "source_mode": "synthesis",
   "metadata": {
-    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
-    "authored_date": "2026-05-01",
-    "generator_model": "qwen/qwen3-235b-a22b",
-    "judge_model": "deepseek/deepseek-chat-v3-0324"
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "Combinatorial slots: {'company_size': 'Enterprise', 'segment': 'HealthTech', 'headcount': '51-200', 'stack': 'Azure+Databricks', 'bench_state': 'Low Availability', 'ai_maturity_score': 'Medium'}"
   }
 }

@@ -1,22 +1,22 @@
 {
-  "task_id": "TB-0092",
+  "task_id": "TB-0084",
   "version": "v0.1",
   "category": "programmatic_combinatorial",
   "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "ComboCorp 16",
+      "company": "ComboCorp 8",
       "signals": {
         "firmographics": {
           "conf": 1.0,
-          "value": "Size: SMB, Segment: Retail, Headcount: 201-1000+",
+          "value": "Size: Enterprise, Segment: Retail, Headcount: 51-200",
           "age_days": 1,
           "validity_window_days": 90,
           "source": "zoominfo"
         },
         "tech_stack": {
           "conf": 0.85,
-          "value": "AWS+Snowflake",
+          "value": "GCP+BigQuery",
           "age_days": 10,
           "validity_window_days": 90,
           "source": "builtwith"
@@ -30,14 +30,14 @@
         },
         "ai_maturity": {
           "conf": 0.75,
-          "value": "Medium",
+          "value": "High",
           "age_days": 5,
           "validity_window_days": 60,
           "source": "inferred"
         }
       }
     },
-    "agent_prompt": "Draft outreach for ComboCorp 16. Firmographics: SMB Retail with 201-1000+ employees. Stack: AWS+Snowflake. Internal Bench: None. AI Maturity: Medium."
+    "agent_prompt": "Draft outreach for ComboCorp 8. Firmographics: Enterprise Retail with 51-200 employees. Stack: GCP+BigQuery. Internal Bench: None. AI Maturity: High."
   },
   "expected": {
     "phrasing_tier": "abstention",
@@ -63,6 +63,6 @@
   "metadata": {
     "authored_by": "Kirubel Tewodros",
     "authored_date": "2026-04-29",
-    "notes": "Combinatorial slots: {'company_size': 'SMB', 'segment': 'Retail', 'headcount': '201-1000+', 'stack': 'AWS+Snowflake', 'bench_state': 'None', 'ai_maturity_score': 'Medium'}"
+    "notes": "Combinatorial slots: {'company_size': 'Enterprise', 'segment': 'Retail', 'headcount': '51-200', 'stack': 'GCP+BigQuery', 'bench_state': 'None', 'ai_maturity_score': 'High'}"
   }
 }

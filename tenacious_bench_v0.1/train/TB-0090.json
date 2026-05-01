@@ -1,22 +1,22 @@
 {
-  "task_id": "TB-0093",
+  "task_id": "TB-0090",
   "version": "v0.1",
   "category": "programmatic_combinatorial",
   "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "ComboCorp 17",
+      "company": "ComboCorp 14",
       "signals": {
         "firmographics": {
           "conf": 1.0,
-          "value": "Size: SMB, Segment: Retail, Headcount: 201-1000+",
+          "value": "Size: SMB, Segment: FinServ, Headcount: 51-200",
           "age_days": 1,
           "validity_window_days": 90,
           "source": "zoominfo"
         },
         "tech_stack": {
           "conf": 0.85,
-          "value": "Azure+Databricks",
+          "value": "AWS+Snowflake",
           "age_days": 10,
           "validity_window_days": 90,
           "source": "builtwith"
@@ -30,14 +30,14 @@
         },
         "ai_maturity": {
           "conf": 0.75,
-          "value": "Medium",
+          "value": "Low",
           "age_days": 5,
           "validity_window_days": 60,
           "source": "inferred"
         }
       }
     },
-    "agent_prompt": "Draft outreach for ComboCorp 17. Firmographics: SMB Retail with 201-1000+ employees. Stack: Azure+Databricks. Internal Bench: Low Availability. AI Maturity: Medium."
+    "agent_prompt": "Draft outreach for ComboCorp 14. Firmographics: SMB FinServ with 51-200 employees. Stack: AWS+Snowflake. Internal Bench: Low Availability. AI Maturity: Low."
   },
   "expected": {
     "phrasing_tier": "inquiry",
@@ -58,6 +58,6 @@
   "metadata": {
     "authored_by": "Kirubel Tewodros",
     "authored_date": "2026-04-29",
-    "notes": "Combinatorial slots: {'company_size': 'SMB', 'segment': 'Retail', 'headcount': '201-1000+', 'stack': 'Azure+Databricks', 'bench_state': 'Low Availability', 'ai_maturity_score': 'Medium'}"
+    "notes": "Combinatorial slots: {'company_size': 'SMB', 'segment': 'FinServ', 'headcount': '51-200', 'stack': 'AWS+Snowflake', 'bench_state': 'Low Availability', 'ai_maturity_score': 'Low'}"
   }
 }

@@ -1,15 +1,15 @@
 {
-  "task_id": "TB-0092",
+  "task_id": "TB-0080",
   "version": "v0.1",
   "category": "programmatic_combinatorial",
   "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "ComboCorp 16",
+      "company": "ComboCorp 4",
       "signals": {
         "firmographics": {
           "conf": 1.0,
-          "value": "Size: SMB, Segment: Retail, Headcount: 201-1000+",
+          "value": "Size: Mid-Market, Segment: FinServ, Headcount: 1-50",
           "age_days": 1,
           "validity_window_days": 90,
           "source": "zoominfo"
@@ -37,7 +37,7 @@
         }
       }
     },
-    "agent_prompt": "Draft outreach for ComboCorp 16. Firmographics: SMB Retail with 201-1000+ employees. Stack: AWS+Snowflake. Internal Bench: None. AI Maturity: Medium."
+    "agent_prompt": "Draft outreach for ComboCorp 4. Firmographics: Mid-Market FinServ with 1-50 employees. Stack: AWS+Snowflake. Internal Bench: None. AI Maturity: Medium."
   },
   "expected": {
     "phrasing_tier": "abstention",
@@ -63,6 +63,6 @@
   "metadata": {
     "authored_by": "Kirubel Tewodros",
     "authored_date": "2026-04-29",
-    "notes": "Combinatorial slots: {'company_size': 'SMB', 'segment': 'Retail', 'headcount': '201-1000+', 'stack': 'AWS+Snowflake', 'bench_state': 'None', 'ai_maturity_score': 'Medium'}"
+    "notes": "Combinatorial slots: {'company_size': 'Mid-Market', 'segment': 'FinServ', 'headcount': '1-50', 'stack': 'AWS+Snowflake', 'bench_state': 'None', 'ai_maturity_score': 'Medium'}"
   }
 }

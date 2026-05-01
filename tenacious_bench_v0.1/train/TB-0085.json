@@ -1,15 +1,15 @@
 {
-  "task_id": "TB-0093",
+  "task_id": "TB-0085",
   "version": "v0.1",
   "category": "programmatic_combinatorial",
   "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "ComboCorp 17",
+      "company": "ComboCorp 9",
       "signals": {
         "firmographics": {
           "conf": 1.0,
-          "value": "Size: SMB, Segment: Retail, Headcount: 201-1000+",
+          "value": "Size: Enterprise, Segment: FinServ, Headcount: 201-1000+",
           "age_days": 1,
           "validity_window_days": 90,
           "source": "zoominfo"
@@ -23,21 +23,21 @@
         },
         "bench_state": {
           "conf": 1.0,
-          "value": "Low Availability",
+          "value": "High Availability",
           "age_days": 0,
           "validity_window_days": 1,
           "source": "internal"
         },
         "ai_maturity": {
           "conf": 0.75,
-          "value": "Medium",
+          "value": "Low",
           "age_days": 5,
           "validity_window_days": 60,
           "source": "inferred"
         }
       }
     },
-    "agent_prompt": "Draft outreach for ComboCorp 17. Firmographics: SMB Retail with 201-1000+ employees. Stack: Azure+Databricks. Internal Bench: Low Availability. AI Maturity: Medium."
+    "agent_prompt": "Draft outreach for ComboCorp 9. Firmographics: Enterprise FinServ with 201-1000+ employees. Stack: Azure+Databricks. Internal Bench: High Availability. AI Maturity: Low."
   },
   "expected": {
     "phrasing_tier": "inquiry",
@@ -58,6 +58,6 @@
   "metadata": {
     "authored_by": "Kirubel Tewodros",
     "authored_date": "2026-04-29",
-    "notes": "Combinatorial slots: {'company_size': 'SMB', 'segment': 'Retail', 'headcount': '201-1000+', 'stack': 'Azure+Databricks', 'bench_state': 'Low Availability', 'ai_maturity_score': 'Medium'}"
+    "notes": "Combinatorial slots: {'company_size': 'Enterprise', 'segment': 'FinServ', 'headcount': '201-1000+', 'stack': 'Azure+Databricks', 'bench_state': 'High Availability', 'ai_maturity_score': 'Low'}"
   }
 }

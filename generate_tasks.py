@@ -9,7 +9,7 @@ Phrasing-tier decision logic mirrors CLAUDE.md thresholds:
   abstention : conf < 0.25  OR  all stale  OR  headcount/pricing/timeline asked
 """
 
-import json, pathlib, random
+import json, pathlib, random, itertools
 from collections import Counter
 
 RANDOM_SEED = 42  # pin for reproducibility across all generation scripts
@@ -744,12 +744,85 @@ thread_tasks = [
 ]
 tasks.extend(thread_tasks)
 
+# ===========================================================================
+# BATCH 11 — Combinatorial Expansion (TB-0076–TB-0095)
+# Explicit cartesian product over 6 named slots
+# ===========================================================================
+
+slots = {
+    "company_size": ["SMB", "Mid-Market", "Enterprise"],
+    "segment": ["FinServ", "HealthTech", "Retail"],
+    "headcount": ["1-50", "51-200", "201-1000+"],
+    "stack": ["AWS+Snowflake", "GCP+BigQuery", "Azure+Databricks"],
+    "bench_state": ["High Availability", "Low Availability", "None"],
+    "ai_maturity_score": ["Low", "Medium", "High"]
+}
+
+keys = list(slots.keys())
+all_combos = list(itertools.product(*(slots[k] for k in keys)))
+random.seed(42) # Re-seed to ensure deterministic sampling
+sampled_combos = random.sample(all_combos, 20)
+
+for i, combo in enumerate(sampled_combos):
+    combo_dict = dict(zip(keys, combo))
+    
+    if combo_dict["bench_state"] == "None":
+        tier = "abstention"
+        route = True
+    elif combo_dict["ai_maturity_score"] == "High" and combo_dict["company_size"] == "Enterprise":
+        tier = "assertive"
+        route = False
+    else:
+        tier = "inquiry"
+        route = False
+        
+    tasks.append({
+        "task_id": tid(76 + i),
+        "version": VERSION,
+        "category": "programmatic_combinatorial",
+        "source_mode": "programmatic",
+        "input": {
+            "prospect_context": {
+                "company": f"ComboCorp {i}",
+                "signals": {
+                    "firmographics": {
+                        "conf": 1.0, 
+                        "value": f"Size: {combo_dict['company_size']}, Segment: {combo_dict['segment']}, Headcount: {combo_dict['headcount']}",
+                        "age_days": 1, "validity_window_days": 90, "source": "zoominfo"
+                    },
+                    "tech_stack": {
+                        "conf": 0.85, 
+                        "value": combo_dict["stack"],
+                        "age_days": 10, "validity_window_days": 90, "source": "builtwith"
+                    },
+                    "bench_state": {
+                        "conf": 1.0,
+                        "value": combo_dict["bench_state"],
+                        "age_days": 0, "validity_window_days": 1, "source": "internal"
+                    },
+                    "ai_maturity": {
+                        "conf": 0.75,
+                        "value": combo_dict["ai_maturity_score"],
+                        "age_days": 5, "validity_window_days": 60, "source": "inferred"
+                    }
+                }
+            },
+            "agent_prompt": f"Draft outreach for ComboCorp {i}. Firmographics: {combo_dict['company_size']} {combo_dict['segment']} with {combo_dict['headcount']} employees. Stack: {combo_dict['stack']}. Internal Bench: {combo_dict['bench_state']}. AI Maturity: {combo_dict['ai_maturity_score']}."
+        },
+        "expected": {
+            "phrasing_tier": tier, "routed_to_human": route,
+            "stale_disclosed": False, "thread_clean": True
+        },
+        "scoring": phrasing_scoring(tier, include_route=route),
+        "metadata": meta(f"Combinatorial slots: {combo_dict}")
+    })
+
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 def main():
-    assert len(tasks) == 75, f"Expected 75 train tasks, got {len(tasks)}"
+    assert len(tasks) == 95, f"Expected 95 train tasks, got {len(tasks)}"
 
     for task in tasks:
         write_task(task, TRAIN_DIR)
@@ -761,7 +834,7 @@ def main():
         expected = f"TB-{i:04d}"
         assert tid_str == expected, f"ID mismatch at position {i}: got {tid_str}"
 
-    print("ID sequence OK: TB-0001 through TB-0075")
+    print("ID sequence OK: TB-0001 through TB-0095")
     print("\nCategory distribution:")
     cats = Counter(t["category"] for t in tasks)
     for cat, count in cats.most_common():

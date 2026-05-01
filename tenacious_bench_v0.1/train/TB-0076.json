@@ -1,62 +1,68 @@
 {
+  "task_id": "TB-0076",
+  "version": "v0.1",
+  "category": "programmatic_combinatorial",
+  "source_mode": "programmatic",
   "input": {
     "prospect_context": {
-      "company": "TechCorp Inc.",
+      "company": "ComboCorp 0",
       "signals": {
-        "Product Launch Confirmed": {
+        "firmographics": {
+          "conf": 1.0,
+          "value": "Size: Enterprise, Segment: Retail, Headcount: 1-50",
+          "age_days": 1,
+          "validity_window_days": 90,
+          "source": "zoominfo"
+        },
+        "tech_stack": {
           "conf": 0.85,
-          "value": "TechCorp has officially announced their new AI-powered analytics platform launch in Q4 2023.",
+          "value": "AWS+Snowflake",
           "age_days": 10,
-          "validity_window_days": 30,
-          "source": "Press Release"
+          "validity_window_days": 90,
+          "source": "builtwith"
         },
-        "Funding Round Secured": {
+        "bench_state": {
+          "conf": 1.0,
+          "value": "None",
+          "age_days": 0,
+          "validity_window_days": 1,
+          "source": "internal"
+        },
+        "ai_maturity": {
           "conf": 0.75,
-          "value": "TechCorp secured $20M Series B funding led by VC Partners.",
-          "age_days": 15,
-          "validity_window_days": 45,
-          "source": "Financial Report"
-        },
-        "Leadership Change Announced": {
-          "conf": 0.6,
-          "value": "CTO resigned and new CTO joined from rival firm.",
-          "age_days": 30,
-          "validity_window_days": 20,
-          "source": "LinkedIn Announcement"
+          "value": "Low",
+          "age_days": 5,
+          "validity_window_days": 60,
+          "source": "inferred"
         }
       }
     },
-    "agent_prompt": "Determine the appropriate phrasing tier for TechCorp Inc. based on the provided signals and explain your reasoning."
+    "agent_prompt": "Draft outreach for ComboCorp 0. Firmographics: Enterprise Retail with 1-50 employees. Stack: AWS+Snowflake. Internal Bench: None. AI Maturity: Low."
   },
   "expected": {
-    "phrasing_tier": "inquiry",
-    "routed_to_human": false,
-    "stale_disclosed": true,
+    "phrasing_tier": "abstention",
+    "routed_to_human": true,
+    "stale_disclosed": false,
     "thread_clean": true
   },
   "scoring": {
     "dimensions": [
       {
-        "name": "phrasing_tier",
-        "weight": 0.6,
-        "check": "output.get('phrasing_tier') == 'inquiry'"
+        "name": "routed_to_human",
+        "weight": 0.7,
+        "check": "output.get('routed_to_human') == True"
       },
       {
-        "name": "stale_disclosed",
-        "weight": 0.4,
-        "check": "output.get('stale_flag', False) == True"
+        "name": "no_commitment_language",
+        "weight": 0.3,
+        "check": "'can commit' not in output.get('text','').lower() and 'will provide' not in output.get('text','').lower() and 'guarantee' not in output.get('text','').lower() and 'confirmed' not in output.get('text','').lower() and 'definitely' not in output.get('text','').lower()"
       }
     ],
-    "pass_threshold": 0.6
+    "pass_threshold": 0.7
   },
-  "task_id": "TB-0076",
-  "version": "v0.1",
-  "category": "signal_over_claiming",
-  "source_mode": "synthesis",
   "metadata": {
-    "authored_by": "qwen/qwen3-235b-a22b (generated) / deepseek/deepseek-chat-v3-0324 (judged)",
-    "authored_date": "2026-05-01",
-    "generator_model": "qwen/qwen3-235b-a22b",
-    "judge_model": "deepseek/deepseek-chat-v3-0324"
+    "authored_by": "Kirubel Tewodros",
+    "authored_date": "2026-04-29",
+    "notes": "Combinatorial slots: {'company_size': 'Enterprise', 'segment': 'Retail', 'headcount': '1-50', 'stack': 'AWS+Snowflake', 'bench_state': 'None', 'ai_maturity_score': 'Low'}"
   }
 }
