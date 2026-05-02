@@ -32,5 +32,17 @@ api.upload_folder(
     repo_type="dataset",
     commit_message="Add held_out split (62 tasks) for independent Delta B verification",
 )
+
+# Upload datasheet.md from project root so it is accessible on the HF Files tab
+datasheet_path = Path(__file__).parent / "datasheet.md"
+print(f"Uploading datasheet.md ...")
+api.upload_file(
+    path_or_fileobj=str(datasheet_path),
+    path_in_repo="datasheet.md",
+    repo_id=REPO_ID,
+    repo_type="dataset",
+    commit_message="Add Gebru-style datasheet (7 sections)",
+)
+
 print("Dataset push complete.")
 print(f"  https://huggingface.co/datasets/{REPO_ID}")

@@ -21,6 +21,8 @@ configs:
         path: train.jsonl
       - split: dev
         path: dev.jsonl
+      - split: held_out
+        path: held_out.jsonl
 ---
 
 # Tenacious-Bench v0.1
@@ -32,7 +34,7 @@ Purpose-built to measure the failure modes that τ²-Bench cannot grade: confide
 |---|---|---|
 | train | 143 | LoRA fine-tuning corpus |
 | dev | 55 | Validation / prompt iteration |
-| held_out | 62 | Sealed — released post-leaderboard |
+| held_out | 62 | Released post-training for independent Delta B verification |
 
 ## Task schema
 
