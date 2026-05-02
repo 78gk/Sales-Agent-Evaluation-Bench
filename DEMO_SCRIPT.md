@@ -16,9 +16,7 @@ Open these tabs in order, left to right:
 2. **Tab 2 — tau-bench GitHub Issue:**
    `https://github.com/sierra-research/tau-bench/issues/82`
 3. **Tab 3 — Blog Post:**
-   `https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1`
-   (This is the HF Community discussion on the dataset page. If this URL 404s, check
-   the Discussions tab on the dataset page and use whichever URL appears there.)
+   `https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/3`
 
 ### ⚠️ VERIFY BEFORE RECORDING — Two URLs to check right now
 

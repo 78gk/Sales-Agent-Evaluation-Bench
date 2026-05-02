@@ -162,7 +162,7 @@ memo.pdf                    # 2-page executive interim report
 | Methodology | ✅ Path A argued (cause→inference→conclusion), 50/30/20 protocol |
 | HuggingFace model (LoRA adapter) | ✅ kirutew17654321/tenacious-bench-qwen-lora |
 | HuggingFace dataset push | ✅ Live — kirutew17654321/tenacious-bench-v0.1 |
-| Blog post | ✅ Live — HF Community discussions/1 |
+| Blog post | ✅ Live — HF Community discussions/3 |
 
 ---
 
@@ -202,7 +202,7 @@ memo.pdf                    # 2-page executive interim report
 |---|---|
 | Full 260-task dataset on HuggingFace (CC-BY-4.0) | ✅ kirutew17654321/tenacious-bench-v0.1 |
 | LoRA adapter on HuggingFace | ✅ kirutew17654321/tenacious-bench-qwen-lora |
-| Blog post (HF Community) | ✅ Live — discussions/1 |
+| Blog post (HF Community) | ✅ Live — discussions/3 |
 | τ²-Bench GitHub issue — community engagement | ✅ sierra-research/tau-bench/issues/82 |
 | Demo video (≤6 min) | ⏳ Pending |
 
@@ -212,7 +212,7 @@ memo.pdf                    # 2-page executive interim report
 
 - **HuggingFace dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) ✅
 - **HuggingFace model (LoRA adapter):** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora) ✅
-- **Blog post:** [HF Community — Building Tenacious-Bench](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1)
+- **Blog post:** [HF Community — Building Tenacious-Bench](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/3)
 - **Community engagement:** [τ²-Bench GitHub issue #82](https://github.com/sierra-research/tau-bench/issues/82)
 - **GitHub:** [78gk/Sales-Agent-Evaluation-Bench](https://github.com/78gk/Sales-Agent-Evaluation-Bench)
 
