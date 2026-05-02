@@ -20,6 +20,24 @@ Open these tabs in order, left to right:
    (This is the HF Community discussion on the dataset page. If this URL 404s, check
    the Discussions tab on the dataset page and use whichever URL appears there.)
 
+### ⚠️ VERIFY BEFORE RECORDING — Two URLs to check right now
+
+**1. Blog post URL:** Open this in your browser and confirm the full post is there:
+   `https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/1`
+   You need to see the heading "Building Tenacious-Bench: What τ²-Bench Can't Measure"
+   and scrollable sections. If it 404s, go to the Discussions tab on the dataset page
+   and find the correct URL, then update Tab 3.
+
+**2. tau-bench issue:** Open and confirm it exists:
+   `https://github.com/sierra-research/tau-bench/issues/82`
+   You need to see the issue body with the 4 gap descriptions and probe IDs.
+
+**3. held_out split in Data Viewer:** Open Tab 1 and click the split dropdown.
+   You should see train (143), dev (55), held_out (62). If held_out is missing,
+   re-run `python push_hf_dataset.py` and wait 2 minutes for HF to re-index.
+
+---
+
 ### Terminal (PowerShell or any terminal)
 - Navigate to: `c:\projects\10\week-11`
 - Run this ONCE to confirm evaluator works:
@@ -55,7 +73,7 @@ Set to 1080p or higher. Font size in terminal: 16pt minimum (grader must read it
 ---
 
 ## SEGMENT 1 — HF DATASET WALKTHROUGH
-**Timestamp: 0:00 – 1:45 (105 seconds)**
+**Timestamp: 0:00 – 1:50 (110 seconds)**
 **Worth: 25 points — most important segment, spend the most time here**
 
 ---
@@ -97,24 +115,20 @@ Set to 1080p or higher. Font size in terminal: 16pt minimum (grader must read it
 
 ---
 
-**⚠️ NOTE: The held_out split will only appear in the dropdown AFTER you run `python push_hf_dataset.py` to push it to HuggingFace. Do this push before recording.**
-
----
-
-**[~1:00 — Navigate to the dataset README / datasheet. This is likely on the main Dataset Card tab. Scroll down past the intro.]*
+**[~1:00 — Click the "Files and Versions" tab on the HF dataset page (tab bar near the top). Then click `datasheet.md` in the file list to open it. It will render as formatted markdown.]**
 
 **SAY:**
-> "The dataset ships with a full Gebru-style datasheet. I'll scroll through the seven required sections."
+> "The dataset ships with a full Gebru-style datasheet — I'll open it from the Files tab."
 
-*[SLOWLY SCROLL so each section heading is legible for 2–3 seconds each. Say the section name as it appears:]*
+*[Wait for datasheet.md to render. Then SLOWLY SCROLL so each section heading is legible for 2–3 seconds. Say each section name as it scrolls into view:]*
 
 > "Section one — **Motivation**: why this dataset was created, who built it, funding."
 > *(scroll)*
 > "Section two — **Composition**: 260 instances, split breakdown, authoring mode distribution."
 > *(scroll)*
-> "Section three — **Collection Process**: authoring pipeline — trace derivation, programmatic sweeps, multi-LLM synthesis, adversarial hand-authoring."
+> "Section three — **Collection Process**: trace derivation, programmatic sweeps, multi-LLM synthesis, adversarial hand-authoring."
 > *(scroll)*
-> "Section four — **Preprocessing**: deduplication via n-gram overlap check, contamination check confirming zero held-out leakage."
+> "Section four — **Preprocessing**: deduplication via n-gram overlap check, zero held-out leakage confirmed."
 > *(scroll)*
 > "Section five — **Uses**: intended use for evaluating B2B sales agents on confidence calibration."
 > *(scroll)*
@@ -134,7 +148,7 @@ Set to 1080p or higher. Font size in terminal: 16pt minimum (grader must read it
 ---
 
 ## SEGMENT 2 — END-TO-END TASK SCORING DEMONSTRATION
-**Timestamp: 1:45 – 3:00 (75 seconds)**
+**Timestamp: 1:50 – 3:00 (70 seconds)**
 **Worth: 25 points**
 
 ---
@@ -206,7 +220,7 @@ python scoring_evaluator.py --task tenacious_bench_v0.1\train\TB-0001.json --out
 **[3:00 — Stay in terminal.]**
 
 **SAY:**
-> "Now the ablation. I trained a LoRA adapter on Qwen2.5-0.5B-Instruct for 500 steps using 2,709 SFT pairs. Let me show the results."
+> "Now the ablation. I trained a LoRA adapter on Qwen2.5-0.5B-Instruct for 500 steps using 3,003 SFT pairs. Let me show the results."
 
 **TYPE / PASTE:**
 ```
@@ -338,7 +352,7 @@ type tenacious_bench_v0.1\held_out\TB-0201.json
 | Train | 143 |
 | Dev | 55 |
 | Held-out | 62 |
-| SFT pairs | 2,709 |
+| SFT pairs | 3,003 (2,709 train + 294 dev) |
 | LoRA rank / alpha | 16 / 32 |
 | Training steps | 500 |
 | Delta B (LoRA vs prompt-only) | **+0.1046** |
