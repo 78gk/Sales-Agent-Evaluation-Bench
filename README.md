@@ -51,6 +51,45 @@ python scoring_evaluator.py \
 # Prints per-task pass/fail + aggregate pass@1
 ```
 
+---
+
+## Reproducing Delta B
+
+The held_out split (62 tasks, TB-0201–TB-0262) is published on HuggingFace so anyone can independently verify the Delta B = +0.1046 result. The training was completed before publication, so the labels were not accessible during training.
+
+**What Delta B measures:** LoRA adapter (pass@1 = 0.3065) minus base Qwen2.5-0.5B-Instruct with the phrasing-gate prompt only (pass@1 = 0.2258). Bootstrap n=1000, seed=42. Full numbers in `ablations/ablation_results.json`.
+
+**Steps to verify:**
+
+1. Clone this repo and install dependencies:
+   ```bash
+   git clone https://github.com/78gk/Sales-Agent-Evaluation-Bench
+   cd Sales-Agent-Evaluation-Bench
+   pip install -r requirements.txt
+   ```
+
+2. Download the LoRA adapter from HuggingFace:
+   ```bash
+   # The adapter is at: kirutew17654321/tenacious-bench-qwen-lora
+   # run_ablation.py will load it from training/checkpoint/ or a HF model ID
+   ```
+
+3. Run the ablation harness on the held_out split:
+   ```bash
+   python training/run_ablation.py \
+     --held-out tenacious_bench_v0.1/held_out \
+     --adapter kirutew17654321/tenacious-bench-qwen-lora \
+     --model qwen2.5-0.5b-instruct \
+     --output ablations/ablation_results_repro.json
+   ```
+   *Requires a GPU. Runs in ~5 minutes on a T4.*
+
+4. Compare `delta_b.bootstrap.delta` in the output to the published value of `0.1046`.
+
+**Known limitation:** 62 held_out tasks produces a 95% CI of [0.0088, 0.2051] — statistically significant but wide. A v0.2 expansion to 150+ tasks would tighten this to ~±0.09. The held_out is intentionally not used in any training script; contamination check confirmed zero n-gram overlap.
+
+---
+
 **Key dependencies:** `transformers`, `peft`, `trl`, `datasets`, `sentence-transformers`, `huggingface-hub`, `openai` (OpenRouter client), `python-dotenv`
 
 ---
@@ -61,7 +100,7 @@ python scoring_evaluator.py \
 tenacious_bench_v0.1/
     train/          # 143 tasks — LoRA fine-tuning corpus
     dev/            # 55 tasks — validation loss + prompt iteration
-    held_out/       # 62 tasks (sealed, gitignored, never in training)
+    held_out/       # 62 tasks — sealed during training, now public for Delta B reproduction
 
 seeds/
     trace_log.jsonl         # 30 Week 10 τ²-Bench simulation traces (read-only seed)
