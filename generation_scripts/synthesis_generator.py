@@ -131,13 +131,9 @@ def run_judge(task: dict, judge_model: str, client: Any) -> dict:
         messages=[{"role": "user", "content": filled}],
         temperature=0.0,
         seed=RANDOM_SEED,
+        response_format={"type": "json_object"},
     )
-    raw = response.choices[0].message.content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    return json.loads(raw)
+    return json.loads(response.choices[0].message.content)
 
 
 def passes_judge_filter(scores: dict) -> bool:
@@ -236,9 +232,9 @@ def pairwise_judge_check(
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
             seed=RANDOM_SEED,
+            response_format={"type": "json_object"},
         )
-        raw = response.choices[0].message.content.strip()
-        result = json.loads(raw)
+        result = json.loads(response.choices[0].message.content)
         return bool(result.get("distinct", True))
     except Exception:
         return False  # on parse error, default to reject — a failed distinctness check is not a confirmed distinct task
