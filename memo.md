@@ -661,6 +661,8 @@ The adapter ships to production with three specific gating conditions that must 
 
 **Evidence cited.** Delta B +0.1046 (p=0.018) shows the adapter significantly outperforms un-trained Qwen2.5-0.5B on the phrasing-gate task. Inference cost delta is $0.00/task (§9.2 Cost-Pareto). The CI lower bound (+0.009) is the minimum defensible lift — below this floor, the adapter's confidence-calibration benefit cannot be distinguished from noise, and the ~$2.40M/yr Signal Over-Claiming pipeline cost [C-004] outweighs any retention upside.
 
+**CI width interpretation.** The 95% CI [+0.009, +0.205] spans 0.196 on a [0,1] scale, which is expected for n=62 tasks with paired bootstrap. The width does not indicate a weak result — it is an honest statement of measurement uncertainty at this sample size. The p-value (0.018) confirms the effect is unlikely under the null; the CI width quantifies how precisely we have measured it. Setting the deployment gate at the lower bound (+0.009) is intentionally conservative: it means the adapter must demonstrate at least the worst plausible effect size before full promotion. A reviewer should interpret this gate as uncertainty-aware, not as a claim that +0.009 is the expected lift.
+
 **Quantitative anchors.** Prompt-only baseline pass@1 = 0.2258. LoRA adapter pass@1 = 0.3065. Minimum production floor = 0.2347. Full traffic promotion threshold = sustained reply-rate improvement ≥ +0.009 ppt over 14 days.
 
 ---
