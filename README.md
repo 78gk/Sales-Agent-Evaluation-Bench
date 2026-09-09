@@ -1,26 +1,64 @@
-# Tenacious-Bench v0.1 — Sales Agent Evaluation & LoRA Alignment
+# Tenacious-Bench v0.1
+## A production-grade evaluation + alignment project for AI outbound sales agents
 
-**Author:** Kirubel Tewodros | **Cohort:** 10 Academy TRP1 | **Week:** 11
-
-**Status:** ✅ Day 6 — training complete — train=143, dev=55, held_out=62 (260 tasks total), dedup PASS, 3,003 SFT pairs, LoRA adapter on HuggingFace Hub — Delta B +0.1046 (p=0.018)
-
----
-
-## What This Is
-
-**Tenacious-Bench v0.1** is a 260-task, machine-verifiable evaluation benchmark for the Week 10 Conversion Engine AI outbound sales agent, purpose-built to measure the three failure modes that τ²-Bench cannot grade:
-
-1. **Signal Over-Claiming** (P-006–P-010): Agent uses assertive language when evidence confidence is below threshold. Trigger rate: 0.55. Annual pipeline cost: ~$2.40M per 1,000 touches.
-2. **Bench Over-Commitment** (P-011): Agent commits to headcount/timeline/pricing instead of routing. Pass@1: 0.40.
-3. **Thread Isolation Failure** (P-019): Agent bleeds context across concurrent prospect threads. Pass@1: 0.18.
-
-**Training deliverable:** A LoRA adapter (Path A — SFT on Qwen2.5-0.5B-Instruct) trained to internalize the phrasing-gate decision for Signal Over-Claiming. Target: statistically significant Delta A on held-out (p < 0.05).
+**Author:** Kirubel Tewodros  
+**Repository:** [78gk/Sales-Agent-Evaluation-Bench](https://github.com/78gk/Sales-Agent-Evaluation-Bench)
 
 ---
 
-## Quick Start
+## Why this project matters (real-world value)
 
-**Requirements:** Python 3.9+
+Most AI sales agents are evaluated on task completion only (did it call the right tool?) and miss the highest-cost failure: **overconfident language on weak signals**.
+
+Tenacious-Bench v0.1 was built to close that gap with machine-verifiable scoring and targeted LoRA alignment.
+
+- **Target risk:** Signal Over-Claiming (trigger rate **0.55**)
+- **Business impact:** estimated **~$2.40M annual pipeline risk per 1,000 touches**
+- **Outcome:** LoRA adapter improves held-out pass@1 by **+0.1046** vs prompt-only baseline (**p=0.018**)
+
+---
+
+## Executive snapshot
+
+| Area | Delivered |
+|---|---|
+| Benchmark | **260-task** dataset (train=143, dev=55, held_out=62) |
+| Evaluation | Deterministic scorer (`scoring_evaluator.py`) with weighted rubric |
+| Alignment | LoRA fine-tune on Qwen2.5-0.5B-Instruct |
+| Training corpus | 3,003 SFT pairs |
+| Validation | 0 n-gram contamination overlap across splits |
+| Result | **Delta B +0.1046** on held_out |
+
+---
+
+## What recruiters and hiring teams can verify here
+
+This repo demonstrates end-to-end applied LLM engineering:
+
+- **Evaluation design:** translated product risk into measurable, testable benchmark tasks
+- **Data engineering:** schema-first task generation, split discipline, contamination controls
+- **Model alignment:** LoRA training pipeline for targeted behavioral correction
+- **Experimentation rigor:** ablations, bootstrap confidence intervals, significance testing
+- **Documentation maturity:** datasheet, methodology, evidence graph, model card, cost ledger
+- **Shipping discipline:** public dataset + adapter + reproducible scripts + community write-up
+
+---
+
+## Core problem covered by the benchmark
+
+Tenacious-Bench focuses on failure modes underrepresented in generic agent benchmarks:
+
+1. **Signal Over-Claiming** (P-006–P-010)
+2. **Bench Over-Commitment** (P-011)
+3. **Thread Isolation Failure** (P-019)
+
+Primary training objective in v0.1: confidence-proportional phrasing for Signal Over-Claiming.
+
+---
+
+## Quickstart
+
+### 1) Environment setup
 
 ```bash
 python -m venv .venv
@@ -28,251 +66,98 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-**Validate schema + 3 built-in example tasks:**
+### 2) Validate schema + scorer
+
 ```bash
 python scoring_evaluator.py --validate
-# Expected output: 3x OK + 2x PASS + 1x FAIL (TB-0003 assertive partial-pass is correct)
+# Expected: 3x OK + 3x PASS
 ```
 
-**Score a single task against an agent response:**
+### 3) Score a single task
+
 ```bash
-# agent_output.json must contain: {"phrasing_tier": "hypothesis", "stale_flag": true}
 python scoring_evaluator.py \
   --task tenacious_bench_v0.1/train/TB-0001.json \
   --output agent_output.json
-# Returns JSON: {"score": float, "pass": bool, "breakdown": {...}}
 ```
 
-**Batch score an entire split:**
+### 4) Batch score a split
+
 ```bash
 python scoring_evaluator.py \
   --batch tenacious_bench_v0.1/dev/ \
   --outputs outputs/dev_responses/
-# Prints per-task pass/fail + aggregate pass@1
 ```
 
 ---
 
-## Reproducing Delta B
-
-The held_out split (62 tasks, TB-0201–TB-0262) is published on HuggingFace so anyone can independently verify the Delta B = +0.1046 result. The training was completed before publication, so the labels were not accessible during training.
-
-**What Delta B measures:** LoRA adapter (pass@1 = 0.3065) minus base Qwen2.5-0.5B-Instruct with the phrasing-gate prompt only (pass@1 = 0.2258). Bootstrap n=1000, seed=42. Full numbers in `ablations/ablation_results.json`.
-
-**Steps to verify:**
-
-1. Clone this repo and install dependencies:
-   ```bash
-   git clone https://github.com/78gk/Sales-Agent-Evaluation-Bench
-   cd Sales-Agent-Evaluation-Bench
-   pip install -r requirements.txt
-   ```
-
-2. Download the LoRA adapter from HuggingFace:
-   ```bash
-   # The adapter is at: kirutew17654321/tenacious-bench-qwen-lora
-   # run_ablation.py will load it from training/checkpoint/ or a HF model ID
-   ```
-
-3. Run the ablation harness on the held_out split:
-   ```bash
-   python training/run_ablation.py \
-     --held-out tenacious_bench_v0.1/held_out \
-     --adapter kirutew17654321/tenacious-bench-qwen-lora \
-     --model qwen2.5-0.5b-instruct \
-     --output ablations/ablation_results_repro.json
-   ```
-   *Requires a GPU. Runs in ~5 minutes on a T4.*
-
-4. Compare `delta_b.bootstrap.delta` in the output to the published value of `0.1046`.
-
-**Known limitation:** 62 held_out tasks produces a 95% CI of [0.0088, 0.2051] — statistically significant but wide. A v0.2 expansion to 150+ tasks would tighten this to ~±0.09. The held_out is intentionally not used in any training script; contamination check confirmed zero n-gram overlap.
-
----
-
-**Key dependencies:** `transformers`, `peft`, `trl`, `datasets`, `sentence-transformers`, `huggingface-hub`, `openai` (OpenRouter client), `python-dotenv`
-
----
-
-## Repository Structure
-
-```
-tenacious_bench_v0.1/
-    train/          # 143 tasks — LoRA fine-tuning corpus
-    dev/            # 55 tasks — validation loss + prompt iteration
-    held_out/       # 62 tasks — sealed during training, now public for Delta B reproduction
-
-seeds/
-    trace_log.jsonl         # 30 Week 10 τ²-Bench simulation traces (read-only seed)
-    probe_library.json/.md  # 33 adversarial probes across 10 failure categories
-    failure_taxonomy.md     # 10 categories with trigger rates and annual costs
-    target_failure_mode.md  # Signal Over-Claiming selection rationale
-
-generation_scripts/
-    synthesis_generator.py  # Multi-LLM pipeline: Qwen3-235B generates, DeepSeek V3 judges
-    dedup_ngram.py          # 8-gram pairwise contamination check
-    dedup_embed.py          # Embedding cosine similarity check (all-MiniLM-L6-v2)
-    router_config.json      # Model routing policy (generator ≠ judge enforced)
-    judge_prompt.txt        # Standalone judge prompt (3 dimensions, 1–5 scale)
-    routing_policy.md       # Written routing rationale
-
-training/
-    prepare_sft_data.py     # Task JSON → ChatML pairs with 20x paraphrase augmentation
-    lora_train.py           # LoRA training via PEFT+TRL (rank=16, alpha=32, T4-optimised)
-    run_ablation.py         # Delta A/B harness with paired bootstrap CIs
-    qwen_pairs.jsonl        # 3,003 SFT training pairs (generated by prepare_sft_data.py)
-
-lora_training.ipynb         # Colab T4 notebook (Steps 1–8: install → train → ablate → download)
-
-ablations/
-    ablation_results.json   # Delta A/B results (filled post-training)
-    held_out_seal.txt       # SHA-256 hashes of 50 sealed held-out tasks
-
-synthesis_memos/            # 8 critical-engagement memos (one per required paper)
-
-schema.json                 # Machine-verifiable task schema + 3 worked examples
-scoring_evaluator.py        # (task, agent_output) → float — the ground-truth scorer
-audit_memo.md               # ≤600 words: 4 τ²-Bench gaps with 8 probe IDs + 5 trace IDs
-methodology.md              # Path A declaration, 50/30/20 split, contamination results
-datasheet.md                # Gebru 7-section + Pushkarna 3-layer dataset documentation
-inter_rater_agreement.md    # 30-task hand-label: Cohen's κ ≈ 0.95 phrasing_tier
-evidence_graph.json         # Every numeric claim in memo/blog traced to a source artifact
-cost_log.md                 # Running API cost log (hard cap: $10 total)
-memo.pdf                    # 2-page executive interim report
-```
-
----
-
-## Current Status
-
-| Artifact | Status |
-|---|---|
-| Schema + scoring evaluator | ✅ Complete — 3 worked examples, `--validate` passes |
-| Benchmark dataset (260 tasks) | ✅ train=143, dev=55, held_out=62 sealed — dedup PASS |
-| Synthesis pipeline | ✅ Complete — Qwen3-235B → DeepSeek V3 judge, 8-gram dedup |
-| Inter-rater agreement | ✅ Complete — κ≈0.95 phrasing_tier, κ=1.0 binary dims |
-| Contamination checks | ✅ 0 n-gram overlaps across all 260 tasks (dedup_ngram.py) |
-| SFT data prep | ✅ 3,003 ChatML pairs (143 tasks × 21x paraphrase augmentation) |
-| LoRA training (real run) | ✅ 507 steps, 3 epochs, 34.8 min T4, loss 14.3→0.167 |
-| Ablation results | ✅ Delta B +0.1046 (p=0.018), LoRA pass@1=0.3065 |
-| Model card | ✅ Complete — `model_card.md` |
-| Synthesis memos | ✅ 8/8 complete — all ≥300 words, genuine disagreement, own evidence |
-| Audit memo | ✅ 579 words, 4 named gaps, 8 probe IDs, 5 trace IDs |
-| Datasheet | ✅ Gebru 7-section + Pushkarna 3-layer |
-| Methodology | ✅ Path A argued (cause→inference→conclusion), 50/30/20 protocol |
-| HuggingFace model (LoRA adapter) | ✅ kirutew17654321/tenacious-bench-qwen-lora |
-| HuggingFace dataset push | ✅ Live — kirutew17654321/tenacious-bench-v0.1 |
-| Blog post | ✅ Live — HF Community discussions/3 |
-
----
-
-## Key Artifacts
-
-| Artifact | Link | What It Does |
-|---|---|---|
-| [Audit Memo](./audit_memo.md) | `audit_memo.md` | 4 τ²-Bench gaps, 8 probe IDs, 5 trace IDs — why Signal Over-Claiming is the target |
-| [Datasheet](./datasheet.md) | `datasheet.md` | Gebru 7-section + Pushkarna 3-layer documentation |
-| [Methodology](./methodology.md) | `methodology.md` | Path A declaration, 50/30/20 split, contamination results |
-| [Synthesis Memos](./synthesis_memos/) | `synthesis_memos/` | 8 critical-engagement memos on LIMA, Magpie, Tülu 3, Gebru, Pushkarna, Liu, Chen, Gu |
-| [Schema](./schema.json) | `schema.json` | Task schema + 3 worked examples (TB-0001/0002/0003) |
-| [Evidence Graph](./evidence_graph.json) | `evidence_graph.json` | Provenance for every numeric claim (C-001 through C-007) |
-| [Cost Log](./cost_log.md) | `cost_log.md` | Running API cost log — hard cap $10 |
-
----
-
-## Key Numbers
-
-| Metric | Value | Source |
-|---|---|---|
-| τ²-Bench pass@1 (Week 10 baseline) | 0.8333 | Week 10 official 30-trial run |
-| Signal Over-Claiming trigger rate | 0.55 | P-006–P-010, seeds/failure_taxonomy.md |
-| Annual pipeline cost (Signal OC) | ~$2.40M / 1,000 touches | seeds/target_failure_mode.md |
-| **LoRA adapter pass@1 (held-out)** | **0.3065** | ablations/ablation_results.json |
-| **Prompt-only Qwen2.5-0.5B pass@1** | **0.2258** | ablations/ablation_results.json |
-| **Delta B (LoRA vs prompt-only)** | **+0.1046 (p=0.018)** | C-007, ablation_results.json |
-| Train loss (14.3 → 0.167) | 507 steps, 3 epochs | training/checkpoint/loss_log.json |
-| Bench Over-Commitment pass@1 | 0.40 | P-011, probe_library |
-| Thread isolation pass@1 | 0.18 | P-019, probe_library |
-
----
-
-## What Ships Day 6
-
-| Item | Status |
-|---|---|
-| Full 260-task dataset on HuggingFace (CC-BY-4.0) | ✅ kirutew17654321/tenacious-bench-v0.1 |
-| LoRA adapter on HuggingFace | ✅ kirutew17654321/tenacious-bench-qwen-lora |
-| Blog post (HF Community) | ✅ Live — discussions/3 |
-| τ²-Bench GitHub issue — community engagement | ✅ sierra-research/tau-bench/issues/82 |
-| Demo video (≤6 min) | ⏳ Pending |
-
----
-
-## Public Artifacts (populated at final submission)
-
-- **HuggingFace dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1) ✅
-- **HuggingFace model (LoRA adapter):** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora) ✅
-- **Blog post:** [HF Community — Building Tenacious-Bench](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1/discussions/3)
-- **Community engagement:** [τ²-Bench GitHub issue #82](https://github.com/sierra-research/tau-bench/issues/82)
-- **GitHub:** [78gk/Sales-Agent-Evaluation-Bench](https://github.com/78gk/Sales-Agent-Evaluation-Bench)
-
----
-
-## Reproduce the Headline Number
-
-**Delta B +0.1046 (p=0.018)** — LoRA adapter vs prompt-only Qwen2.5-0.5B on sealed held-out.
+## Reproduce the headline result (Delta B)
 
 ```bash
-# 1. Install dependencies
+# 1) Install dependencies
 pip install -r requirements.txt
 
-# 2. Pull the trained adapter from HuggingFace
+# 2) Pull LoRA adapter
 python -c "from huggingface_hub import snapshot_download; snapshot_download('kirutew17654321/tenacious-bench-qwen-lora', local_dir='training/checkpoint')"
 
-# 3. Run ablation on held_out (requires held_out/ partition — contact author)
+# 3) Run ablation on held_out
 python training/run_ablation.py \
-    --held-out tenacious_bench_v0.1/held_out \
-    --adapter training/checkpoint \
-    --model qwen2.5-0.5b-instruct \
-    --output ablations/ablation_results.json
+  --held-out tenacious_bench_v0.1/held_out \
+  --adapter training/checkpoint \
+  --model qwen2.5-0.5b-instruct \
+  --output ablations/ablation_results.json
+```
 
-# 4. Verify scoring evaluator
-python scoring_evaluator.py --validate
-# Expected: 3x OK + 2x PASS + 1x FAIL
+Published benchmark number:
+- **LoRA pass@1:** 0.3065
+- **Prompt-only pass@1:** 0.2258
+- **Delta B:** **+0.1046** (p=0.018)
+
+---
+
+## Public artifacts
+
+- **Dataset:** [kirutew17654321/tenacious-bench-v0.1](https://huggingface.co/datasets/kirutew17654321/tenacious-bench-v0.1)
+- **LoRA Adapter:** [kirutew17654321/tenacious-bench-qwen-lora](https://huggingface.co/kirutew17654321/tenacious-bench-qwen-lora)
+- **Model Card:** [`model_card.md`](./model_card.md)
+- **Methodology:** [`methodology.md`](./methodology.md)
+- **Audit Memo:** [`audit_memo.md`](./audit_memo.md)
+- **Evidence Graph:** [`evidence_graph.json`](./evidence_graph.json)
+- **Cost Log:** [`cost_log.md`](./cost_log.md)
+
+---
+
+## Repository layout
+
+```text
+tenacious_bench_v0.1/      # dataset splits
+generation_scripts/         # synthesis + dedup pipeline
+training/                   # SFT prep, LoRA training, ablation
+seeds/                      # week-10 traces, probe library, taxonomy
+ablations/                  # experiment outputs
+synthesis_memos/            # literature synthesis
 ```
 
 ---
 
-## Running Costs
+## Tech stack
 
-See [cost_log.md](./cost_log.md). Hard cap: **$10 total**.  
-OpenRouter spent: ~$7.21 (synthesis generation via Qwen3-235B + DeepSeek V3).  
-Remaining: ~$2.79 (reserved for eval-tier calibration slice, Day 6).
+- Python, JSON schema validation
+- Transformers, PEFT, TRL, Datasets
+- OpenRouter-based data synthesis pipeline
+- Hugging Face Hub (dataset + adapter publishing)
 
 ---
 
 ## License
 
-- **Code** (scripts, evaluator, training): [Apache 2.0](./LICENSE)
-- **Dataset** (`tenacious_bench_v0.1/`): [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)
-- **LoRA adapter** (`kirutew17654321/tenacious-bench-qwen-lora`): Apache 2.0
+- **Code:** [Apache 2.0](./LICENSE)
+- **Dataset:** CC-BY-4.0
+- **Adapter:** Apache 2.0
 
 ---
 
-## Attribution & Credits
+## Contact
 
-**Author:** Kirubel Tewodros — [kirubel@10academy.org](mailto:kirubel@10academy.org)  
-**Cohort:** 10 Academy TRP1, Week 11  
-**Program:** [10 Academy](https://10academy.org) Artificial Intelligence Mastery  
-
-**Built on:**
-- [Qwen2.5-0.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct) — Alibaba DAMO Academy (Apache 2.0)
-- [PEFT](https://github.com/huggingface/peft) + [TRL](https://github.com/huggingface/trl) — HuggingFace (Apache 2.0)
-- [τ²-Bench](https://github.com/sierra-research/tau2-bench) — Sierra Research (evaluation baseline, CC-BY 4.0)
-- Synthesis pipeline: [Qwen3-235B](https://huggingface.co/Qwen/Qwen3-235B) (generator) + [DeepSeek V3](https://huggingface.co/deepseek-ai/DeepSeek-V3) (judge) via OpenRouter
-
-**Key papers cited:**
-- Zhou et al. (2023) — LIMA: Less Is More for Alignment
-- Lambert et al. (2024) — Tülu 3: Pushing Frontiers in Open Language Model Post-Training
-- Xu et al. (2024) — Magpie: Alignment Data Synthesis from Scratch
-- Li et al. (2025) — Preference Contamination in LLM-as-a-Judge Pipelines
+**Kirubel Tewodros**  
+GitHub: [@78gk](https://github.com/78gk)
